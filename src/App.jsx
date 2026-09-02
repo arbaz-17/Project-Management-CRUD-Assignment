@@ -40,24 +40,10 @@ function App() {
       <header className="app-header">
         <div>
           <span className="app-eyebrow">
-            PRODUCT MANAGEMENT
+            PROJECT MANAGEMENT SYSTEM - WEEK 7 ASSIGNMENT
           </span>
 
           <h1>Products</h1>
-
-          <p>
-            Manage your catalog with a clean, focused
-            workspace.
-          </p>
-        </div>
-
-        <div
-          className="app-header-decoration"
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
         </div>
       </header>
 

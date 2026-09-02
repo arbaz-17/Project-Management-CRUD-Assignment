@@ -1,4 +1,8 @@
-import { Pencil, Search, Trash2 } from "lucide-react";
+import {
+  Pencil,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useRef } from "react";
 
 function formatCategory(category) {
@@ -24,8 +28,26 @@ function formatPrice(price) {
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "PKR",
   }).format(numericPrice);
+}
+
+function formatDate(date) {
+  if (!date) {
+    return "—";
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(parsedDate);
 }
 
 function ProductTableSkeleton() {
@@ -42,7 +64,9 @@ function ProductTableSkeleton() {
               <th>Product</th>
               <th>Category</th>
               <th>Price</th>
+              <th>Stock</th>
               <th>Status</th>
+              <th>Created</th>
               <th className="action-column">Action</th>
             </tr>
           </thead>
@@ -67,7 +91,15 @@ function ProductTableSkeleton() {
                 </td>
 
                 <td>
+                  <span className="skeleton skeleton-stock" />
+                </td>
+
+                <td>
                   <span className="skeleton skeleton-status" />
+                </td>
+
+                <td>
+                  <span className="skeleton skeleton-date" />
                 </td>
 
                 <td>
@@ -146,7 +178,9 @@ export default function ProductTable({
               <th>Product</th>
               <th>Category</th>
               <th>Price</th>
+              <th>Stock</th>
               <th>Status</th>
+              <th>Created</th>
               <th className="action-column">Action</th>
             </tr>
           </thead>
@@ -187,10 +221,6 @@ export default function ProductTable({
                         <span className="product-title">
                           {product.title}
                         </span>
-
-                        <span className="product-id">
-                          ID #{product.id}
-                        </span>
                       </div>
                     </div>
                   </td>
@@ -209,6 +239,18 @@ export default function ProductTable({
 
                   <td>
                     <span
+                      className={`stock-text ${
+                        Number(product.stock) <= 5
+                          ? "stock-low"
+                          : ""
+                      }`}
+                    >
+                      {product.stock ?? "—"}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span
                       className={`status-badge ${
                         product.status === "active"
                           ? "status-active"
@@ -216,7 +258,14 @@ export default function ProductTable({
                       }`}
                     >
                       <span className="status-dot" />
+
                       {product.status || "Unknown"}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span className="date-text">
+                      {formatDate(product.createdAt)}
                     </span>
                   </td>
 
