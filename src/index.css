@@ -1,88 +1,138 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
 :root {
-  /* Light Mode Theme: Orange, Black, White */
-  --text: #374151;
-  --text-h: #000000;
-  --bg: #ffffff;
-  --border: #e5e7eb;
-  --code-bg: #f3f4f6;
-  --accent: #f97316; /* Orange */
-  --accent-bg: rgba(249, 115, 22, 0.1);
-  --accent-border: rgba(249, 115, 22, 0.5);
-  
-  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-  
-  /* UPDATED: Poppins is now the default font */
-  --sans: 'Poppins', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: 'Poppins', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --font-sans: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-soft: #fafafa;
+  --surface-hover: #f8f8f8;
+
+  --text: #171717;
+  --text-secondary: #666666;
+  --text-muted: #8b8b8b;
+
+  --border: #e8e8e8;
+  --border-strong: #dcdcdc;
+
+  --accent: #f97316;
+  --accent-hover: #ea580c;
+  --accent-soft: rgba(249, 115, 22, 0.1);
+  --accent-border: rgba(249, 115, 22, 0.25);
+
+  --success: #16a34a;
+  --success-soft: rgba(22, 163, 74, 0.1);
+
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.1);
+
+  --shadow-sm:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+
+  --shadow-md:
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.03);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  color-scheme: light;
+  font-family: var(--font-sans);
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark Mode Theme: Orange, Black, White */
-    --text: #9ca3af;
-    --text-h: #ffffff;
-    --bg: #121212;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #fb923c; /* Lighter Orange for Dark Mode */
-    --accent-bg: rgba(251, 146, 60, 0.15);
-    --accent-border: rgba(251, 146, 60, 0.5);
-    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+:root[data-theme="dark"] {
+  --bg: #0f0f10;
+  --surface: #171718;
+  --surface-soft: #1b1b1d;
+  --surface-hover: #202023;
+
+  --text: #f5f5f5;
+  --text-secondary: #b1b1b5;
+  --text-muted: #7d7d83;
+
+  --border: #29292d;
+  --border-strong: #37373d;
+
+  --accent: #fb923c;
+  --accent-hover: #f97316;
+  --accent-soft: rgba(251, 146, 60, 0.12);
+  --accent-border: rgba(251, 146, 60, 0.3);
+
+  --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.1);
+
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.1);
+
+  --shadow-sm:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.15);
+
+  --shadow-md:
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body,
+button,
+input,
+select {
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+select {
+  font-size: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+input,
+select {
+  color: var(--text);
+}
+
+::selection {
+  background: var(--accent);
+  color: #ffffff;
 }
 
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-h1, h2, h3 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  margin: 32px 0;
-}
-
-p {
-  margin: 0 0 1rem 0;
-}
-
-code {
-  font-family: var(--mono);
-  font-size: 0.9em;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: var(--code-bg);
-  color: var(--text-h);
+  width: 100%;
+  min-height: 100vh;
 }

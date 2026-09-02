@@ -2,8 +2,7 @@ const API_URL = "https://6a97c4900e3240db90620c53.mockapi.io/api/products";
 
 export async function getProducts(params = {}) {
   const searchParams = new URLSearchParams();
-
-  // Add only defined/non-empty query parameters
+  
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       searchParams.set(key, String(value));
