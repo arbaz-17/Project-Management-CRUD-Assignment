@@ -33,11 +33,13 @@ export function useProductParams() {
       }
     });
 
-    window.history.pushState(
-      {},
-      "",
-      `${window.location.pathname}?${params.toString()}`
-    );
+    const queryString = params.toString();
+
+    const url = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
+
+    window.history.pushState({}, "", url);
 
     window.dispatchEvent(new PopStateEvent("popstate"));
   }, []);
