@@ -144,22 +144,6 @@ const someSelected =
   selectedCountOnCurrentPage > 0 &&
   !allSelected;
 
-console.log("selectedIds:", selectedIds);
-
-console.log(
-  "product ids:",
-  products.map((product) => product.id)
-);
-
-console.log(
-  "selected status:",
-  products.map((product) => ({
-    id: product.id,
-    title: product.title,
-    selected: selectedIds.includes(product.id),
-  }))
-);
-
   /*
    * The indeterminate property is a DOM property.
    * It cannot be represented completely through

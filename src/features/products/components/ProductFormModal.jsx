@@ -44,6 +44,8 @@ export default function ProductFormModal({
   product = null,
   onClose,
   onSubmit,
+  isSubmitting = false,
+  submissionError = null,
 }) {
   const isEditMode = mode === "edit";
 
@@ -52,8 +54,6 @@ export default function ProductFormModal({
   );
 
   const [errors, setErrors] = useState({});
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateField = (field, value) => {
     setFormData((current) => ({
@@ -108,18 +108,12 @@ export default function ProductFormModal({
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      await onSubmit({
-        ...formData,
-        title: formData.title.trim(),
-        price: Number(formData.price),
-        stock: Number(formData.stock),
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onSubmit({
+      ...formData,
+      title: formData.title.trim(),
+      price: Number(formData.price),
+      stock: Number(formData.stock),
+    });
   };
 
   return (
@@ -140,7 +134,6 @@ export default function ProductFormModal({
       >
         <div className="modal-header">
           <div>
-
             <h2 id="product-form-title">
               {isEditMode
                 ? "Edit product"
@@ -159,6 +152,7 @@ export default function ProductFormModal({
             className="modal-close-button"
             onClick={onClose}
             aria-label="Close modal"
+            disabled={isSubmitting}
           >
             <X size={19} />
           </button>
@@ -192,6 +186,7 @@ export default function ProductFormModal({
                 }
                 placeholder="e.g. Wireless Headphones"
                 autoFocus
+                disabled={isSubmitting}
               />
             </div>
 
@@ -228,6 +223,7 @@ export default function ProductFormModal({
                     )
                   }
                   placeholder="0.00"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -263,6 +259,7 @@ export default function ProductFormModal({
                     )
                   }
                   placeholder="0"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -292,6 +289,7 @@ export default function ProductFormModal({
                     event.target.value
                   )
                 }
+                disabled={isSubmitting}
               >
                 <option value="">
                   Select category
@@ -331,6 +329,7 @@ export default function ProductFormModal({
                     event.target.value
                   )
                 }
+                disabled={isSubmitting}
               >
                 <option value="active">
                   Active
@@ -348,6 +347,13 @@ export default function ProductFormModal({
               )}
             </div>
           </div>
+
+          {submissionError && (
+            <div className="form-error">
+              {submissionError.message ||
+                "Failed to save product. Please try again."}
+            </div>
+          )}
 
           <div className="modal-footer">
             <button

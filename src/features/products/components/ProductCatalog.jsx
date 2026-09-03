@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useProducts } from "../hooks/useProducts";
 import { useProductParams } from "../hooks/useProductParams";
+import { useCreateProduct } from "../hooks/useCreateProduct";
 
 import {
   clearSelection,
@@ -35,6 +36,7 @@ export default function ProductCatalog() {
   } = useProductParams();
 
   const dispatch = useDispatch();
+  const createProductMutation = useCreateProduct();
 
   const selectedIds = useSelector(
     selectSelectedProductIds
@@ -43,6 +45,8 @@ export default function ProductCatalog() {
   const selectedProductCount = useSelector(
     selectSelectedProductCount
   );
+
+  
 
   /*
    * Controls the Add/Edit modal.
@@ -206,35 +210,27 @@ export default function ProductCatalog() {
   };
 
   const handleProductSubmit = async (formData) => {
-    if (!productModal) {
-      return;
-    }
+  if (!productModal) {
+    return;
+  }
 
-    if (productModal.mode === "edit") {
-      /*
-       * Placeholder for future TanStack Query mutation.
-       *
-       * await updateProductMutation.mutateAsync({
-       *   id: productModal.product.id,
-       *   data: formData,
-       * });
-       */
-      console.log("Update product:", {
-        id: productModal.product.id,
-        data: formData,
-      });
-    } else {
-      /*
-       * Placeholder for future TanStack Query mutation.
-       *
-       * await createProductMutation.mutateAsync(formData);
-       */
-      console.log("Create product:", formData);
-    }
+  if (productModal.mode === "edit") {
+    /*
+     * Update mutation will be implemented in the
+     * next phase.
+     */
+    console.log("Update product:", {
+      id: productModal.product.id,
+      data: formData,
+    });
 
-    setProductModal(null);
-  };
+    return;
+  }
 
+  await createProductMutation.mutateAsync(formData);
+
+  setProductModal(null);
+};
   /*
    * --------------------------------------------------
    * Delete modal
@@ -401,15 +397,17 @@ export default function ProductCatalog() {
       />
 
       {productModal && (
-        <ProductFormModal
-          key={`${productModal.mode}-${
-            productModal.product?.id ?? "new"
-          }`}
-          mode={productModal.mode}
-          product={productModal.product}
-          onClose={handleCloseProductModal}
-          onSubmit={handleProductSubmit}
-        />
+<ProductFormModal
+  key={`${productModal.mode}-${
+    productModal.product?.id ?? "new"
+  }`}
+  mode={productModal.mode}
+  product={productModal.product}
+  onClose={handleCloseProductModal}
+  onSubmit={handleProductSubmit}
+  isSubmitting={createProductMutation.isPending}
+  submissionError={createProductMutation.error}
+/>
       )}
 
       {productToDelete && (

@@ -29,7 +29,24 @@ export async function getProducts(params = {}) {
 
   const data = await response.json();
 
-  console.log("API products:", data);
-
   return data;
+}
+
+
+export async function createProduct(productData) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(productData),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to create product (${response.status} ${response.statusText})`
+    );
+  }
+
+  return response.json();
 }
