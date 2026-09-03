@@ -67,49 +67,53 @@ function ProductTableSkeleton() {
               <th>Stock</th>
               <th>Status</th>
               <th>Created</th>
-              <th className="action-column">Action</th>
+              <th className="action-column">
+                Action
+              </th>
             </tr>
           </thead>
 
           <tbody>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <tr key={index}>
-                <td>
-                  <span className="skeleton skeleton-checkbox" />
-                </td>
+            {Array.from({ length: 6 }).map(
+              (_, index) => (
+                <tr key={index}>
+                  <td>
+                    <span className="skeleton skeleton-checkbox" />
+                  </td>
 
-                <td>
-                  <span className="skeleton skeleton-title" />
-                </td>
+                  <td>
+                    <span className="skeleton skeleton-title" />
+                  </td>
 
-                <td>
-                  <span className="skeleton skeleton-text" />
-                </td>
+                  <td>
+                    <span className="skeleton skeleton-text" />
+                  </td>
 
-                <td>
-                  <span className="skeleton skeleton-price" />
-                </td>
+                  <td>
+                    <span className="skeleton skeleton-price" />
+                  </td>
 
-                <td>
-                  <span className="skeleton skeleton-stock" />
-                </td>
+                  <td>
+                    <span className="skeleton skeleton-stock" />
+                  </td>
 
-                <td>
-                  <span className="skeleton skeleton-status" />
-                </td>
+                  <td>
+                    <span className="skeleton skeleton-status" />
+                  </td>
 
-                <td>
-                  <span className="skeleton skeleton-date" />
-                </td>
+                  <td>
+                    <span className="skeleton skeleton-date" />
+                  </td>
 
-                <td>
-                  <div className="skeleton-actions">
-                    <span className="skeleton skeleton-action" />
-                    <span className="skeleton skeleton-action" />
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  <td>
+                    <div className="skeleton-actions">
+                      <span className="skeleton skeleton-action" />
+                      <span className="skeleton skeleton-action" />
+                    </div>
+                  </td>
+                </tr>
+              )
+            )}
           </tbody>
         </table>
       </div>
@@ -120,25 +124,51 @@ function ProductTableSkeleton() {
 export default function ProductTable({
   products,
   selectedIds,
+  selectedProductCount,
   onToggleRow,
   onToggleAll,
   onEdit,
   onDelete,
+  onClearSelection,
 }) {
   const selectAllRef = useRef(null);
 
+  const selectedCountOnCurrentPage =
+    selectedIds.length;
+
   const allSelected =
     products.length > 0 &&
-    products.every((product) =>
-      selectedIds.includes(product.id)
-    );
+    selectedCountOnCurrentPage === products.length;
 
-  const someSelected =
-    selectedIds.length > 0 && !allSelected;
+const someSelected =
+  selectedCountOnCurrentPage > 0 &&
+  !allSelected;
 
+console.log("selectedIds:", selectedIds);
+
+console.log(
+  "product ids:",
+  products.map((product) => product.id)
+);
+
+console.log(
+  "selected status:",
+  products.map((product) => ({
+    id: product.id,
+    title: product.title,
+    selected: selectedIds.includes(product.id),
+  }))
+);
+
+  /*
+   * The indeterminate property is a DOM property.
+   * It cannot be represented completely through
+   * the normal checked boolean.
+   */
   useEffect(() => {
     if (selectAllRef.current) {
-      selectAllRef.current.indeterminate = someSelected;
+      selectAllRef.current.indeterminate =
+        someSelected;
     }
   }, [someSelected]);
 
@@ -152,8 +182,9 @@ export default function ProductTable({
         <h3>No products found</h3>
 
         <p>
-          No products match your current search or filters.
-          Try changing your filters and search again.
+          No products match your current search or
+          filters. Try changing your filters and search
+          again.
         </p>
       </div>
     );
@@ -181,7 +212,9 @@ export default function ProductTable({
               <th>Stock</th>
               <th>Status</th>
               <th>Created</th>
-              <th className="action-column">Action</th>
+              <th className="action-column">
+                Action
+              </th>
             </tr>
           </thead>
 
@@ -195,7 +228,9 @@ export default function ProductTable({
                 <tr
                   key={product.id}
                   className={
-                    selected ? "is-selected" : undefined
+                    selected
+                      ? "is-selected"
+                      : undefined
                   }
                 >
                   <td className="checkbox-column">
@@ -227,7 +262,9 @@ export default function ProductTable({
 
                   <td>
                     <span className="category-text">
-                      {formatCategory(product.category)}
+                      {formatCategory(
+                        product.category
+                      )}
                     </span>
                   </td>
 
@@ -274,7 +311,9 @@ export default function ProductTable({
                       <button
                         type="button"
                         className="row-action-button"
-                        onClick={() => onEdit(product)}
+                        onClick={() =>
+                          onEdit(product)
+                        }
                         title={`Edit ${product.title}`}
                       >
                         <Pencil size={15} />
@@ -284,7 +323,9 @@ export default function ProductTable({
                       <button
                         type="button"
                         className="row-action-button row-action-danger"
-                        onClick={() => onDelete(product)}
+                        onClick={() =>
+                          onDelete(product)
+                        }
                         title={`Delete ${product.title}`}
                       >
                         <Trash2 size={15} />
@@ -299,22 +340,32 @@ export default function ProductTable({
         </table>
       </div>
 
-      {selectedIds.length > 0 && (
+      {selectedProductCount > 0 && (
         <div className="selection-bar">
           <span>
-            <strong>{selectedIds.length}</strong>{" "}
-            {selectedIds.length === 1
+            <strong>{selectedProductCount}</strong>{" "}
+            {selectedProductCount === 1
               ? "product"
               : "products"}{" "}
             selected
           </span>
 
-          <button
-            type="button"
-            className="selection-bar-button"
-          >
-            Bulk Actions
-          </button>
+          <div className="selection-bar-actions">
+            <button
+              type="button"
+              className="selection-bar-button"
+              onClick={onClearSelection}
+            >
+              Clear Selection
+            </button>
+
+            <button
+              type="button"
+              className="selection-bar-button"
+            >
+              Bulk Actions
+            </button>
+          </div>
         </div>
       )}
     </div>
