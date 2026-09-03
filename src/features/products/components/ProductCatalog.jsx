@@ -192,27 +192,28 @@ const deleteProductMutation = useDeleteProduct();
   const handleCloseProductModal = () => {
     setProductModal(null);
   };
+const handleProductSubmit = async (formData) => {
+  if (!productModal) {
+    return;
+  }
 
-  const handleProductSubmit = async (formData) => {
-    if (!productModal) {
-      return;
-    }
-
-    if (productModal.mode === "edit") {
-      await updateProductMutation.mutateAsync({
-        id: productModal.product.id,
-        data: formData,
-      });
-
-      setProductModal(null);
-
-      return;
-    }
-
-    await createProductMutation.mutateAsync(formData);
+  if (productModal.mode === "edit") {
+    const productId = productModal.product.id;
 
     setProductModal(null);
-  };
+
+    updateProductMutation.mutate({
+      id: productId,
+      data: formData,
+    });
+
+    return;
+  }
+
+  await createProductMutation.mutateAsync(formData);
+
+  setProductModal(null);
+};
   /*
    * --------------------------------------------------
    * Delete modal
@@ -227,12 +228,13 @@ const deleteProductMutation = useDeleteProduct();
     setProductToDelete(null);
   };
 
-const handleDeleteConfirm = async (product) => {
-  await deleteProductMutation.mutateAsync(product.id);
+const handleDeleteConfirm = (product) => {
+  const productId = product.id;
 
   setProductToDelete(null);
-};
 
+  deleteProductMutation.mutate(productId);
+};
   /*
    * --------------------------------------------------
    * Toolbar
