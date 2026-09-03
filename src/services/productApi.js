@@ -84,3 +84,22 @@ export async function deleteProduct(id) {
 
   return response.json();
 }
+
+
+export async function updateProductStatus({ id, status }) {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to update product status (${response.status} ${response.statusText})`
+    );
+  }
+
+  return response.json();
+}

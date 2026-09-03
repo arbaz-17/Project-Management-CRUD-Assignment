@@ -6,6 +6,8 @@ import { useProductParams } from "../hooks/useProductParams";
 import { useCreateProduct } from "../hooks/useCreateProduct";
 import { useUpdateProduct } from "../hooks/useUpdateProduct";
 import { useDeleteProduct } from "../hooks/useDeleteProduct";
+import { useBulkDeleteProducts } from "../hooks/useBulkDeleteProducts";
+import { useBulkUpdateProductStatus } from "../hooks/useBulkUpdateProductStatus";
 
 import {
   clearSelection,
@@ -19,6 +21,7 @@ import {
   selectSelectedProductIds,
 } from "../../../lib/redux/selectors.js";
 
+import BulkDeleteProductsModal from "./BulkDeleteProductsModal";
 import DeleteProductModal from "./DeleteProductModal";
 import ProductEmptyState from "./ui-states/ProductEmptyState";
 import ProductErrorState from "./ui-states/ProductErrorState";
@@ -32,9 +35,12 @@ export default function ProductCatalog() {
   const { page, title, category, status, updateParams } = useProductParams();
 
   const dispatch = useDispatch();
-const createProductMutation = useCreateProduct();
-const updateProductMutation = useUpdateProduct();
-const deleteProductMutation = useDeleteProduct();
+
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
+  const bulkDeleteProductsMutation = useBulkDeleteProducts();
+  const bulkUpdateProductStatusMutation = useBulkUpdateProductStatus();
 
   const selectedIds = useSelector(selectSelectedProductIds);
 
@@ -55,6 +61,11 @@ const deleteProductMutation = useDeleteProduct();
    * Product currently waiting for delete confirmation.
    */
   const [productToDelete, setProductToDelete] = useState(null);
+
+  /*
+   * Controls the bulk delete confirmation modal.
+   */
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   const {
     data,
@@ -152,6 +163,7 @@ const deleteProductMutation = useDeleteProduct();
 
     if (allSelected) {
       dispatch(deselectProducts(productIds));
+
       return;
     }
 
@@ -192,28 +204,34 @@ const deleteProductMutation = useDeleteProduct();
   const handleCloseProductModal = () => {
     setProductModal(null);
   };
-const handleProductSubmit = async (formData) => {
-  if (!productModal) {
-    return;
-  }
 
-  if (productModal.mode === "edit") {
-    const productId = productModal.product.id;
+  const handleProductSubmit = async (formData) => {
+    if (!productModal) {
+      return;
+    }
+
+    if (productModal.mode === "edit") {
+      const productId = productModal.product.id;
+
+      /*
+       * Close the modal immediately because the update
+       * is optimistic.
+       */
+      setProductModal(null);
+
+      updateProductMutation.mutate({
+        id: productId,
+        data: formData,
+      });
+
+      return;
+    }
+
+    await createProductMutation.mutateAsync(formData);
 
     setProductModal(null);
+  };
 
-    updateProductMutation.mutate({
-      id: productId,
-      data: formData,
-    });
-
-    return;
-  }
-
-  await createProductMutation.mutateAsync(formData);
-
-  setProductModal(null);
-};
   /*
    * --------------------------------------------------
    * Delete modal
@@ -228,13 +246,93 @@ const handleProductSubmit = async (formData) => {
     setProductToDelete(null);
   };
 
-const handleDeleteConfirm = (product) => {
-  const productId = product.id;
+  const handleDeleteConfirm = (product) => {
+    const productId = product.id;
 
-  setProductToDelete(null);
+    /*
+     * Close the confirmation modal immediately
+     * because delete is optimistic.
+     */
+    setProductToDelete(null);
 
-  deleteProductMutation.mutate(productId);
-};
+    deleteProductMutation.mutate(productId);
+  };
+
+  /*
+   * --------------------------------------------------
+   * Bulk delete
+   * --------------------------------------------------
+   */
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    setShowBulkDeleteModal(true);
+  };
+
+  const handleCloseBulkDeleteModal = () => {
+    if (bulkDeleteProductsMutation.isPending) {
+      return;
+    }
+
+    setShowBulkDeleteModal(false);
+  };
+
+  const handleBulkDeleteConfirm = () => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    /*
+     * Take a snapshot of the IDs before starting the
+     * mutation so the mutation receives the correct
+     * selection even though the UI changes immediately.
+     */
+    const productIds = [...selectedIds];
+
+    /*
+     * Close the confirmation modal immediately because
+     * the bulk delete is optimistic.
+     */
+    setShowBulkDeleteModal(false);
+
+    bulkDeleteProductsMutation.mutate(productIds, {
+      onSuccess: () => {
+        dispatch(clearSelection());
+      },
+    });
+  };
+
+  const handleBulkStatusUpdate = (status) => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    const productIds = [...selectedIds];
+
+    bulkUpdateProductStatusMutation.mutate(
+      {
+        productIds,
+        status,
+      },
+      {
+        onSuccess: () => {
+          dispatch(clearSelection());
+        },
+      },
+    );
+  };
+
+  const handleMarkActive = () => {
+    handleBulkStatusUpdate("active");
+  };
+
+  const handleMarkInactive = () => {
+    handleBulkStatusUpdate("inactive");
+  };
+
   /*
    * --------------------------------------------------
    * Toolbar
@@ -349,6 +447,13 @@ const handleDeleteConfirm = (product) => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onClearSelection={handleClearSelection}
+        onDeleteSelected={handleBulkDelete}
+        onMarkActive={handleMarkActive}
+        onMarkInactive={handleMarkInactive}
+        isProcessing={
+          bulkDeleteProductsMutation.isPending ||
+          bulkUpdateProductStatusMutation.isPending
+        }
       />
 
       <ProductPagination
@@ -389,13 +494,23 @@ const handleDeleteConfirm = (product) => {
       )}
 
       {productToDelete && (
-<DeleteProductModal
-  product={productToDelete}
-  onClose={handleCloseDeleteModal}
-  onConfirm={handleDeleteConfirm}
-  isDeleting={deleteProductMutation.isPending}
-  deletionError={deleteProductMutation.error}
-/>
+        <DeleteProductModal
+          product={productToDelete}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleDeleteConfirm}
+          isDeleting={deleteProductMutation.isPending}
+          deletionError={deleteProductMutation.error}
+        />
+      )}
+
+      {showBulkDeleteModal && (
+        <BulkDeleteProductsModal
+          productCount={selectedProductCount}
+          onClose={handleCloseBulkDeleteModal}
+          onConfirm={handleBulkDeleteConfirm}
+          isDeleting={bulkDeleteProductsMutation.isPending}
+          deletionError={bulkDeleteProductsMutation.error}
+        />
       )}
     </div>
   );

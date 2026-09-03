@@ -1,9 +1,7 @@
-import {
-  Pencil,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
+
+import BulkActionsMenu from "./BulkActionsMenu";
 
 function formatCategory(category) {
   if (!category) {
@@ -12,10 +10,7 @@ function formatCategory(category) {
 
   return category
     .split("-")
-    .map(
-      (word) =>
-        word.charAt(0).toUpperCase() + word.slice(1)
-    )
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
 
@@ -67,53 +62,49 @@ function ProductTableSkeleton() {
               <th>Stock</th>
               <th>Status</th>
               <th>Created</th>
-              <th className="action-column">
-                Action
-              </th>
+              <th className="action-column">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {Array.from({ length: 6 }).map(
-              (_, index) => (
-                <tr key={index}>
-                  <td>
-                    <span className="skeleton skeleton-checkbox" />
-                  </td>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <tr key={index}>
+                <td>
+                  <span className="skeleton skeleton-checkbox" />
+                </td>
 
-                  <td>
-                    <span className="skeleton skeleton-title" />
-                  </td>
+                <td>
+                  <span className="skeleton skeleton-title" />
+                </td>
 
-                  <td>
-                    <span className="skeleton skeleton-text" />
-                  </td>
+                <td>
+                  <span className="skeleton skeleton-text" />
+                </td>
 
-                  <td>
-                    <span className="skeleton skeleton-price" />
-                  </td>
+                <td>
+                  <span className="skeleton skeleton-price" />
+                </td>
 
-                  <td>
-                    <span className="skeleton skeleton-stock" />
-                  </td>
+                <td>
+                  <span className="skeleton skeleton-stock" />
+                </td>
 
-                  <td>
-                    <span className="skeleton skeleton-status" />
-                  </td>
+                <td>
+                  <span className="skeleton skeleton-status" />
+                </td>
 
-                  <td>
-                    <span className="skeleton skeleton-date" />
-                  </td>
+                <td>
+                  <span className="skeleton skeleton-date" />
+                </td>
 
-                  <td>
-                    <div className="skeleton-actions">
-                      <span className="skeleton skeleton-action" />
-                      <span className="skeleton skeleton-action" />
-                    </div>
-                  </td>
-                </tr>
-              )
-            )}
+                <td>
+                  <div className="skeleton-actions">
+                    <span className="skeleton skeleton-action" />
+                    <span className="skeleton skeleton-action" />
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -130,19 +121,19 @@ export default function ProductTable({
   onEdit,
   onDelete,
   onClearSelection,
+  onDeleteSelected,
+  onMarkActive,
+  onMarkInactive,
+  isProcessing,
 }) {
   const selectAllRef = useRef(null);
 
-  const selectedCountOnCurrentPage =
-    selectedIds.length;
+  const selectedCountOnCurrentPage = selectedIds.length;
 
   const allSelected =
-    products.length > 0 &&
-    selectedCountOnCurrentPage === products.length;
+    products.length > 0 && selectedCountOnCurrentPage === products.length;
 
-const someSelected =
-  selectedCountOnCurrentPage > 0 &&
-  !allSelected;
+  const someSelected = selectedCountOnCurrentPage > 0 && !allSelected;
 
   /*
    * The indeterminate property is a DOM property.
@@ -151,8 +142,7 @@ const someSelected =
    */
   useEffect(() => {
     if (selectAllRef.current) {
-      selectAllRef.current.indeterminate =
-        someSelected;
+      selectAllRef.current.indeterminate = someSelected;
     }
   }, [someSelected]);
 
@@ -166,9 +156,8 @@ const someSelected =
         <h3>No products found</h3>
 
         <p>
-          No products match your current search or
-          filters. Try changing your filters and search
-          again.
+          No products match your current search or filters. Try changing your
+          filters and search again.
         </p>
       </div>
     );
@@ -196,34 +185,24 @@ const someSelected =
               <th>Stock</th>
               <th>Status</th>
               <th>Created</th>
-              <th className="action-column">
-                Action
-              </th>
+              <th className="action-column">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {products.map((product) => {
-              const selected = selectedIds.includes(
-                product.id
-              );
+              const selected = selectedIds.includes(product.id);
 
               return (
                 <tr
                   key={product.id}
-                  className={
-                    selected
-                      ? "is-selected"
-                      : undefined
-                  }
+                  className={selected ? "is-selected" : undefined}
                 >
                   <td className="checkbox-column">
                     <input
                       type="checkbox"
                       checked={selected}
-                      onChange={() =>
-                        onToggleRow(product.id)
-                      }
+                      onChange={() => onToggleRow(product.id)}
                       aria-label={`Select ${product.title}`}
                     />
                   </td>
@@ -231,24 +210,18 @@ const someSelected =
                   <td>
                     <div className="product-cell">
                       <div className="product-avatar">
-                        {product.title
-                          ?.charAt(0)
-                          ?.toUpperCase() || "P"}
+                        {product.title?.charAt(0)?.toUpperCase() || "P"}
                       </div>
 
                       <div className="product-info">
-                        <span className="product-title">
-                          {product.title}
-                        </span>
+                        <span className="product-title">{product.title}</span>
                       </div>
                     </div>
                   </td>
 
                   <td>
                     <span className="category-text">
-                      {formatCategory(
-                        product.category
-                      )}
+                      {formatCategory(product.category)}
                     </span>
                   </td>
 
@@ -261,9 +234,7 @@ const someSelected =
                   <td>
                     <span
                       className={`stock-text ${
-                        Number(product.stock) <= 5
-                          ? "stock-low"
-                          : ""
+                        Number(product.stock) <= 5 ? "stock-low" : ""
                       }`}
                     >
                       {product.stock ?? "—"}
@@ -295,9 +266,7 @@ const someSelected =
                       <button
                         type="button"
                         className="row-action-button"
-                        onClick={() =>
-                          onEdit(product)
-                        }
+                        onClick={() => onEdit(product)}
                         title={`Edit ${product.title}`}
                       >
                         <Pencil size={15} />
@@ -307,9 +276,7 @@ const someSelected =
                       <button
                         type="button"
                         className="row-action-button row-action-danger"
-                        onClick={() =>
-                          onDelete(product)
-                        }
+                        onClick={() => onDelete(product)}
                         title={`Delete ${product.title}`}
                       >
                         <Trash2 size={15} />
@@ -328,10 +295,7 @@ const someSelected =
         <div className="selection-bar">
           <span>
             <strong>{selectedProductCount}</strong>{" "}
-            {selectedProductCount === 1
-              ? "product"
-              : "products"}{" "}
-            selected
+            {selectedProductCount === 1 ? "product" : "products"} selected
           </span>
 
           <div className="selection-bar-actions">
@@ -343,12 +307,13 @@ const someSelected =
               Clear Selection
             </button>
 
-            <button
-              type="button"
-              className="selection-bar-button"
-            >
-              Bulk Actions
-            </button>
+            <BulkActionsMenu
+              selectedProductCount={selectedProductCount}
+              onDeleteSelected={onDeleteSelected}
+              onMarkActive={onMarkActive}
+              onMarkInactive={onMarkInactive}
+              isProcessing={isProcessing}
+            />
           </div>
         </div>
       )}
