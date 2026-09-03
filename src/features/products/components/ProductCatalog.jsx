@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useProducts } from "../hooks/useProducts";
 import { useProductParams } from "../hooks/useProductParams";
 import { useCreateProduct } from "../hooks/useCreateProduct";
+import { useUpdateProduct } from "../hooks/useUpdateProduct";
 
 import {
   clearSelection,
@@ -27,26 +28,15 @@ import ProductTable from "./ProductTable";
 import ProductToolbar from "./ProductToolbar";
 
 export default function ProductCatalog() {
-  const {
-    page,
-    title,
-    category,
-    status,
-    updateParams,
-  } = useProductParams();
+  const { page, title, category, status, updateParams } = useProductParams();
 
   const dispatch = useDispatch();
   const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
 
-  const selectedIds = useSelector(
-    selectSelectedProductIds
-  );
+  const selectedIds = useSelector(selectSelectedProductIds);
 
-  const selectedProductCount = useSelector(
-    selectSelectedProductCount
-  );
-
-  
+  const selectedProductCount = useSelector(selectSelectedProductCount);
 
   /*
    * Controls the Add/Edit modal.
@@ -57,14 +47,12 @@ export default function ProductCatalog() {
    * or:
    * { mode: "edit", product: selectedProduct }
    */
-  const [productModal, setProductModal] =
-    useState(null);
+  const [productModal, setProductModal] = useState(null);
 
   /*
    * Product currently waiting for delete confirmation.
    */
-  const [productToDelete, setProductToDelete] =
-    useState(null);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   const {
     data,
@@ -85,9 +73,7 @@ export default function ProductCatalog() {
   const products = data?.products ?? [];
   const hasNextPage = data?.hasNextPage ?? false;
 
-  const hasActiveFilters = Boolean(
-    title || category || status
-  );
+  const hasActiveFilters = Boolean(title || category || status);
 
   /*
    * Only keep selected IDs that belong to the
@@ -96,7 +82,7 @@ export default function ProductCatalog() {
    * This is derived state, not Redux state.
    */
   const visibleSelectedIds = selectedIds.filter((id) =>
-    products.some((product) => product.id === id)
+    products.some((product) => product.id === id),
   );
 
   /*
@@ -158,13 +144,9 @@ export default function ProductCatalog() {
       return;
     }
 
-    const productIds = products.map(
-      (product) => product.id
-    );
+    const productIds = products.map((product) => product.id);
 
-    const allSelected = productIds.every((id) =>
-      selectedIds.includes(id)
-    );
+    const allSelected = productIds.every((id) => selectedIds.includes(id));
 
     if (allSelected) {
       dispatch(deselectProducts(productIds));
@@ -210,27 +192,25 @@ export default function ProductCatalog() {
   };
 
   const handleProductSubmit = async (formData) => {
-  if (!productModal) {
-    return;
-  }
+    if (!productModal) {
+      return;
+    }
 
-  if (productModal.mode === "edit") {
-    /*
-     * Update mutation will be implemented in the
-     * next phase.
-     */
-    console.log("Update product:", {
-      id: productModal.product.id,
-      data: formData,
-    });
+    if (productModal.mode === "edit") {
+      await updateProductMutation.mutateAsync({
+        id: productModal.product.id,
+        data: formData,
+      });
 
-    return;
-  }
+      setProductModal(null);
 
-  await createProductMutation.mutateAsync(formData);
+      return;
+    }
 
-  setProductModal(null);
-};
+    await createProductMutation.mutateAsync(formData);
+
+    setProductModal(null);
+  };
   /*
    * --------------------------------------------------
    * Delete modal
@@ -293,10 +273,7 @@ export default function ProductCatalog() {
       <div className="products-page">
         {toolbar}
 
-        <ProductErrorState
-          message={error?.message}
-          onRetry={refetch}
-        />
+        <ProductErrorState message={error?.message} onRetry={refetch} />
       </div>
     );
   }
@@ -356,15 +333,11 @@ export default function ProductCatalog() {
 
       <div className="table-heading">
         <div>
-          <p>
-            Browse, search, filter, and manage your
-            products.
-          </p>
+          <p>Browse, search, filter, and manage your products.</p>
         </div>
 
         <div className="table-meta">
-          {products.length}{" "}
-          {products.length === 1 ? "item" : "items"}
+          {products.length} {products.length === 1 ? "item" : "items"}
         </div>
       </div>
 
@@ -397,17 +370,23 @@ export default function ProductCatalog() {
       />
 
       {productModal && (
-<ProductFormModal
-  key={`${productModal.mode}-${
-    productModal.product?.id ?? "new"
-  }`}
-  mode={productModal.mode}
-  product={productModal.product}
-  onClose={handleCloseProductModal}
-  onSubmit={handleProductSubmit}
-  isSubmitting={createProductMutation.isPending}
-  submissionError={createProductMutation.error}
-/>
+        <ProductFormModal
+          key={`${productModal.mode}-${productModal.product?.id ?? "new"}`}
+          mode={productModal.mode}
+          product={productModal.product}
+          onClose={handleCloseProductModal}
+          onSubmit={handleProductSubmit}
+          isSubmitting={
+            productModal.mode === "edit"
+              ? updateProductMutation.isPending
+              : createProductMutation.isPending
+          }
+          submissionError={
+            productModal.mode === "edit"
+              ? updateProductMutation.error
+              : createProductMutation.error
+          }
+        />
       )}
 
       {productToDelete && (
