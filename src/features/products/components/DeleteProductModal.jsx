@@ -2,24 +2,16 @@ import {
   AlertTriangle,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
 
 export default function DeleteProductModal({
   product,
   onClose,
   onConfirm,
+  isDeleting = false,
+  deletionError = null,
 }) {
-  const [isDeleting, setIsDeleting] =
-    useState(false);
-
   const handleConfirm = async () => {
-    setIsDeleting(true);
-
-    try {
-      await onConfirm(product);
-    } finally {
-      setIsDeleting(false);
-    }
+    await onConfirm(product);
   };
 
   return (
@@ -38,14 +30,11 @@ export default function DeleteProductModal({
         aria-modal="true"
         aria-labelledby="delete-product-title"
       >
-
-
         <div className="delete-icon">
           <AlertTriangle size={27} />
         </div>
 
         <div className="delete-content">
-
           <h2 id="delete-product-title">
             Delete this product?
           </h2>
@@ -55,6 +44,13 @@ export default function DeleteProductModal({
             <strong>{product?.title}</strong>. This action
             cannot be undone.
           </p>
+
+          {deletionError && (
+            <div className="form-error">
+              {deletionError.message ||
+                "Failed to delete product. Please try again."}
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">

@@ -70,3 +70,17 @@ export async function updateProduct({ id, data }) {
 
   return response.json();
 }
+
+export async function deleteProduct(id) {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to delete product (${response.status} ${response.statusText})`
+    );
+  }
+
+  return response.json();
+}

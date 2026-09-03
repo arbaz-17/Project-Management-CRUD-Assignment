@@ -5,6 +5,7 @@ import { useProducts } from "../hooks/useProducts";
 import { useProductParams } from "../hooks/useProductParams";
 import { useCreateProduct } from "../hooks/useCreateProduct";
 import { useUpdateProduct } from "../hooks/useUpdateProduct";
+import { useDeleteProduct } from "../hooks/useDeleteProduct";
 
 import {
   clearSelection,
@@ -31,8 +32,9 @@ export default function ProductCatalog() {
   const { page, title, category, status, updateParams } = useProductParams();
 
   const dispatch = useDispatch();
-  const createProductMutation = useCreateProduct();
-  const updateProductMutation = useUpdateProduct();
+const createProductMutation = useCreateProduct();
+const updateProductMutation = useUpdateProduct();
+const deleteProductMutation = useDeleteProduct();
 
   const selectedIds = useSelector(selectSelectedProductIds);
 
@@ -225,16 +227,11 @@ export default function ProductCatalog() {
     setProductToDelete(null);
   };
 
-  const handleDeleteConfirm = async (product) => {
-    /*
-     * Placeholder for future TanStack Query mutation.
-     *
-     * await deleteProductMutation.mutateAsync(product.id);
-     */
-    console.log("Delete product:", product);
+const handleDeleteConfirm = async (product) => {
+  await deleteProductMutation.mutateAsync(product.id);
 
-    setProductToDelete(null);
-  };
+  setProductToDelete(null);
+};
 
   /*
    * --------------------------------------------------
@@ -390,11 +387,13 @@ export default function ProductCatalog() {
       )}
 
       {productToDelete && (
-        <DeleteProductModal
-          product={productToDelete}
-          onClose={handleCloseDeleteModal}
-          onConfirm={handleDeleteConfirm}
-        />
+<DeleteProductModal
+  product={productToDelete}
+  onClose={handleCloseDeleteModal}
+  onConfirm={handleDeleteConfirm}
+  isDeleting={deleteProductMutation.isPending}
+  deletionError={deleteProductMutation.error}
+/>
       )}
     </div>
   );
