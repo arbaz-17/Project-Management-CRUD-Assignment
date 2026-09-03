@@ -1,7 +1,20 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useProducts } from "../hooks/useProducts";
 import { useProductParams } from "../hooks/useProductParams";
+
+import {
+  clearSelection,
+  deselectProducts,
+  selectProducts,
+  toggleProductSelection,
+} from "../../../lib/redux/appSlice.js";
+
+import {
+  selectSelectedProductCount,
+  selectSelectedProductIds,
+} from "../../../lib/redux/selectors.js";
 
 import DeleteProductModal from "./DeleteProductModal";
 import ProductEmptyState from "./ui-states/ProductEmptyState";
@@ -12,10 +25,7 @@ import ProductPagination from "./ProductPagination";
 import ProductTable from "./ProductTable";
 import ProductToolbar from "./ProductToolbar";
 
-export default function ProductCatalog({
-  theme,
-  onThemeToggle,
-}) {
+export default function ProductCatalog() {
   const {
     page,
     title,
@@ -24,7 +34,15 @@ export default function ProductCatalog({
     updateParams,
   } = useProductParams();
 
-  const [selectedIds, setSelectedIds] = useState([]);
+  const dispatch = useDispatch();
+
+  const selectedIds = useSelector(
+    selectSelectedProductIds
+  );
+
+  const selectedProductCount = useSelector(
+    selectSelectedProductCount
+  );
 
   /*
    * Controls the Add/Edit modal.
@@ -67,6 +85,12 @@ export default function ProductCatalog({
     title || category || status
   );
 
+  /*
+   * Only keep selected IDs that belong to the
+   * currently visible products.
+   *
+   * This is derived state, not Redux state.
+   */
   const visibleSelectedIds = selectedIds.filter((id) =>
     products.some((product) => product.id === id)
   );
@@ -83,7 +107,7 @@ export default function ProductCatalog({
       page: 1,
     });
 
-    setSelectedIds([]);
+    dispatch(clearSelection());
   };
 
   const handleCategoryChange = (event) => {
@@ -92,7 +116,7 @@ export default function ProductCatalog({
       page: 1,
     });
 
-    setSelectedIds([]);
+    dispatch(clearSelection());
   };
 
   const handleStatusChange = (event) => {
@@ -101,7 +125,7 @@ export default function ProductCatalog({
       page: 1,
     });
 
-    setSelectedIds([]);
+    dispatch(clearSelection());
   };
 
   const handleClearFilters = () => {
@@ -112,7 +136,7 @@ export default function ProductCatalog({
       page: 1,
     });
 
-    setSelectedIds([]);
+    dispatch(clearSelection());
   };
 
   /*
@@ -122,15 +146,7 @@ export default function ProductCatalog({
    */
 
   const handleToggleRow = (id) => {
-    setSelectedIds((current) => {
-      if (current.includes(id)) {
-        return current.filter(
-          (selectedId) => selectedId !== id
-        );
-      }
-
-      return [...current, id];
-    });
+    dispatch(toggleProductSelection(id));
   };
 
   const handleToggleAll = () => {
@@ -147,21 +163,22 @@ export default function ProductCatalog({
     );
 
     if (allSelected) {
-      setSelectedIds((current) =>
-        current.filter(
-          (id) => !productIds.includes(id)
-        )
-      );
-
+      dispatch(deselectProducts(productIds));
       return;
     }
 
-    setSelectedIds((current) => [
-      ...current.filter(
-        (id) => !productIds.includes(id)
-      ),
-      ...productIds,
-    ]);
+    dispatch(selectProducts(productIds));
+  };
+
+  /*
+   * Clear all selected products.
+   *
+   * Selection is global client state owned by Redux.
+   * ProductTable remains presentational and receives
+   * this handler through props.
+   */
+  const handleClearSelection = () => {
+    dispatch(clearSelection());
   };
 
   /*
@@ -195,7 +212,7 @@ export default function ProductCatalog({
 
     if (productModal.mode === "edit") {
       /*
-       * Placeholder for future TanStack Query mutation:
+       * Placeholder for future TanStack Query mutation.
        *
        * await updateProductMutation.mutateAsync({
        *   id: productModal.product.id,
@@ -208,19 +225,13 @@ export default function ProductCatalog({
       });
     } else {
       /*
-       * Placeholder for future TanStack Query mutation:
+       * Placeholder for future TanStack Query mutation.
        *
        * await createProductMutation.mutateAsync(formData);
        */
       console.log("Create product:", formData);
     }
 
-    /*
-     * For now, close after the placeholder action.
-     *
-     * When we add the real mutation, this can stay here
-     * after mutateAsync succeeds.
-     */
     setProductModal(null);
   };
 
@@ -240,24 +251,13 @@ export default function ProductCatalog({
 
   const handleDeleteConfirm = async (product) => {
     /*
-     * Placeholder for future TanStack Query mutation:
+     * Placeholder for future TanStack Query mutation.
      *
      * await deleteProductMutation.mutateAsync(product.id);
      */
     console.log("Delete product:", product);
 
-    /*
-     * Once the mutation succeeds, close the dialog.
-     */
     setProductToDelete(null);
-
-    /*
-     * Later, the mutation's onSuccess can invalidate:
-     *
-     * queryClient.invalidateQueries({
-     *   queryKey: ["products"],
-     * });
-     */
   };
 
   /*
@@ -268,7 +268,6 @@ export default function ProductCatalog({
 
   const toolbar = (
     <ProductToolbar
-      key={title}
       title={title}
       category={category}
       status={status}
@@ -280,8 +279,6 @@ export default function ProductCatalog({
       onAdd={handleAdd}
       onRefresh={refetch}
       isFetching={isFetching}
-      theme={theme}
-      onThemeToggle={onThemeToggle}
     />
   );
 
@@ -294,8 +291,6 @@ export default function ProductCatalog({
       </div>
     );
   }
-
-
 
   if (isError) {
     return (
@@ -311,25 +306,20 @@ export default function ProductCatalog({
   }
 
   /*
-   * --------------------------------------------------
-   * Loading during page/filter changes
-   * --------------------------------------------------
+   * keepPreviousData is enabled in useProducts.
    *
-   * keepPreviousData means TanStack Query can keep
-   * the previous response while the new request runs.
+   * During a page/filter change we temporarily have
+   * the previous query's data while the new request runs.
    *
-   * We intentionally hide that previous table and show
-   * the centered loading state instead.
+   * For this UI we intentionally show the loading state
+   * rather than displaying the old page.
    */
-
   if (isFetching && isPlaceholderData) {
     return (
       <div className="products-page">
         {toolbar}
 
-        <ProductLoadingState
-          message="Loading products..."
-        />
+        <ProductLoadingState message="Loading products..." />
       </div>
     );
   }
@@ -364,7 +354,6 @@ export default function ProductCatalog({
     );
   }
 
-
   return (
     <div className="products-page">
       {toolbar}
@@ -386,10 +375,12 @@ export default function ProductCatalog({
       <ProductTable
         products={products}
         selectedIds={visibleSelectedIds}
+        selectedProductCount={selectedProductCount}
         onToggleRow={handleToggleRow}
         onToggleAll={handleToggleAll}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onClearSelection={handleClearSelection}
       />
 
       <ProductPagination
@@ -411,14 +402,15 @@ export default function ProductCatalog({
 
       {productModal && (
         <ProductFormModal
-          key={`${productModal.mode}-${productModal.product?.id ?? "new"}`}
+          key={`${productModal.mode}-${
+            productModal.product?.id ?? "new"
+          }`}
           mode={productModal.mode}
           product={productModal.product}
           onClose={handleCloseProductModal}
           onSubmit={handleProductSubmit}
         />
       )}
-
 
       {productToDelete && (
         <DeleteProductModal

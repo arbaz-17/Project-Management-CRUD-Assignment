@@ -1,24 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 import ProductCatalog from "./features/products/components/ProductCatalog";
-
-function getInitialTheme() {
-  const savedTheme = window.localStorage.getItem(
-    "product-management-theme"
-  );
-
-  if (savedTheme === "light" || savedTheme === "dark") {
-    return savedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)")
-    .matches
-    ? "dark"
-    : "light";
-}
+import { selectTheme } from "./lib/redux/selectors.js";
 
 function App() {
-  const [theme, setTheme] = useState(getInitialTheme);
+  const theme = useSelector(selectTheme);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -28,12 +15,6 @@ function App() {
       theme
     );
   }, [theme]);
-
-  const handleThemeToggle = () => {
-    setTheme((currentTheme) =>
-      currentTheme === "dark" ? "light" : "dark"
-    );
-  };
 
   return (
     <main className="app-shell">
@@ -47,10 +28,7 @@ function App() {
         </div>
       </header>
 
-      <ProductCatalog
-        theme={theme}
-        onThemeToggle={handleThemeToggle}
-      />
+      <ProductCatalog />
     </main>
   );
 }
