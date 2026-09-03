@@ -3,15 +3,15 @@ import {
   Trash2,
 } from "lucide-react";
 
-export default function DeleteProductModal({
-  product,
+export default function BulkDeleteProductsModal({
+  productCount,
   onClose,
   onConfirm,
   isDeleting = false,
   deletionError = null,
 }) {
   const handleConfirm = async () => {
-    await onConfirm(product);
+    await onConfirm();
   };
 
   return (
@@ -28,27 +28,27 @@ export default function DeleteProductModal({
         className="modal modal-delete"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="delete-product-title"
+        aria-labelledby="bulk-delete-products-title"
       >
         <div className="delete-icon">
           <AlertTriangle size={27} />
         </div>
 
         <div className="delete-content">
-          <h2 id="delete-product-title">
-            Delete this product?
+          <h2 id="bulk-delete-products-title">
+            Delete selected products?
           </h2>
 
           <p>
             You are about to delete{" "}
-            <strong>{product?.title}</strong>. This action
-            cannot be undone.
+            <strong>{productCount} products</strong>. This
+            action cannot be undone.
           </p>
 
           {deletionError && (
             <div className="form-error">
               {deletionError.message ||
-                "Failed to delete product. Please try again."}
+                "Failed to delete selected products. Please try again."}
             </div>
           )}
         </div>
@@ -73,7 +73,7 @@ export default function DeleteProductModal({
 
             {isDeleting
               ? "Deleting..."
-              : "Delete product"}
+              : "Delete products"}
           </button>
         </div>
       </div>

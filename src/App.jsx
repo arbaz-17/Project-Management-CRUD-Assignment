@@ -21,7 +21,7 @@ function App() {
       <header className="app-header">
         <div>
           <span className="app-eyebrow">
-            PROJECT MANAGEMENT SYSTEM - WEEK 7 ASSIGNMENT
+            PRODUCT MANAGEMENT SYSTEM - WEEK 7 ASSIGNMENT
           </span>
 
           <h1>Products</h1>

@@ -1,0 +1,30 @@
+export async function updateProduct({ id, data }) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, 3000);
+  });
+
+  throw new Error("Test optimistic update failure");
+}
+
+
+export async function updateProduct({ id, data }) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, 3000);
+  });
+
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to update product (${response.status} ${response.statusText})`
+    );
+  }
+
+  return response.json();
+}

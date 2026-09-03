@@ -3,6 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useProducts } from "../hooks/useProducts";
 import { useProductParams } from "../hooks/useProductParams";
+import { useCreateProduct } from "../hooks/useCreateProduct";
+import { useUpdateProduct } from "../hooks/useUpdateProduct";
+import { useDeleteProduct } from "../hooks/useDeleteProduct";
+import { useBulkDeleteProducts } from "../hooks/useBulkDeleteProducts";
+import { useBulkUpdateProductStatus } from "../hooks/useBulkUpdateProductStatus";
 
 import {
   clearSelection,
@@ -16,6 +21,7 @@ import {
   selectSelectedProductIds,
 } from "../../../lib/redux/selectors.js";
 
+import BulkDeleteProductsModal from "./BulkDeleteProductsModal";
 import DeleteProductModal from "./DeleteProductModal";
 import ProductEmptyState from "./ui-states/ProductEmptyState";
 import ProductErrorState from "./ui-states/ProductErrorState";
@@ -26,23 +32,19 @@ import ProductTable from "./ProductTable";
 import ProductToolbar from "./ProductToolbar";
 
 export default function ProductCatalog() {
-  const {
-    page,
-    title,
-    category,
-    status,
-    updateParams,
-  } = useProductParams();
+  const { page, title, category, status, updateParams } = useProductParams();
 
   const dispatch = useDispatch();
 
-  const selectedIds = useSelector(
-    selectSelectedProductIds
-  );
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
+  const bulkDeleteProductsMutation = useBulkDeleteProducts();
+  const bulkUpdateProductStatusMutation = useBulkUpdateProductStatus();
 
-  const selectedProductCount = useSelector(
-    selectSelectedProductCount
-  );
+  const selectedIds = useSelector(selectSelectedProductIds);
+
+  const selectedProductCount = useSelector(selectSelectedProductCount);
 
   /*
    * Controls the Add/Edit modal.
@@ -53,14 +55,17 @@ export default function ProductCatalog() {
    * or:
    * { mode: "edit", product: selectedProduct }
    */
-  const [productModal, setProductModal] =
-    useState(null);
+  const [productModal, setProductModal] = useState(null);
 
   /*
    * Product currently waiting for delete confirmation.
    */
-  const [productToDelete, setProductToDelete] =
-    useState(null);
+  const [productToDelete, setProductToDelete] = useState(null);
+
+  /*
+   * Controls the bulk delete confirmation modal.
+   */
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   const {
     data,
@@ -81,9 +86,7 @@ export default function ProductCatalog() {
   const products = data?.products ?? [];
   const hasNextPage = data?.hasNextPage ?? false;
 
-  const hasActiveFilters = Boolean(
-    title || category || status
-  );
+  const hasActiveFilters = Boolean(title || category || status);
 
   /*
    * Only keep selected IDs that belong to the
@@ -92,7 +95,7 @@ export default function ProductCatalog() {
    * This is derived state, not Redux state.
    */
   const visibleSelectedIds = selectedIds.filter((id) =>
-    products.some((product) => product.id === id)
+    products.some((product) => product.id === id),
   );
 
   /*
@@ -154,16 +157,13 @@ export default function ProductCatalog() {
       return;
     }
 
-    const productIds = products.map(
-      (product) => product.id
-    );
+    const productIds = products.map((product) => product.id);
 
-    const allSelected = productIds.every((id) =>
-      selectedIds.includes(id)
-    );
+    const allSelected = productIds.every((id) => selectedIds.includes(id));
 
     if (allSelected) {
       dispatch(deselectProducts(productIds));
+
       return;
     }
 
@@ -211,26 +211,23 @@ export default function ProductCatalog() {
     }
 
     if (productModal.mode === "edit") {
+      const productId = productModal.product.id;
+
       /*
-       * Placeholder for future TanStack Query mutation.
-       *
-       * await updateProductMutation.mutateAsync({
-       *   id: productModal.product.id,
-       *   data: formData,
-       * });
+       * Close the modal immediately because the update
+       * is optimistic.
        */
-      console.log("Update product:", {
-        id: productModal.product.id,
+      setProductModal(null);
+
+      updateProductMutation.mutate({
+        id: productId,
         data: formData,
       });
-    } else {
-      /*
-       * Placeholder for future TanStack Query mutation.
-       *
-       * await createProductMutation.mutateAsync(formData);
-       */
-      console.log("Create product:", formData);
+
+      return;
     }
+
+    await createProductMutation.mutateAsync(formData);
 
     setProductModal(null);
   };
@@ -249,15 +246,91 @@ export default function ProductCatalog() {
     setProductToDelete(null);
   };
 
-  const handleDeleteConfirm = async (product) => {
-    /*
-     * Placeholder for future TanStack Query mutation.
-     *
-     * await deleteProductMutation.mutateAsync(product.id);
-     */
-    console.log("Delete product:", product);
+  const handleDeleteConfirm = (product) => {
+    const productId = product.id;
 
+    /*
+     * Close the confirmation modal immediately
+     * because delete is optimistic.
+     */
     setProductToDelete(null);
+
+    deleteProductMutation.mutate(productId);
+  };
+
+  /*
+   * --------------------------------------------------
+   * Bulk delete
+   * --------------------------------------------------
+   */
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    setShowBulkDeleteModal(true);
+  };
+
+  const handleCloseBulkDeleteModal = () => {
+    if (bulkDeleteProductsMutation.isPending) {
+      return;
+    }
+
+    setShowBulkDeleteModal(false);
+  };
+
+  const handleBulkDeleteConfirm = () => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    /*
+     * Take a snapshot of the IDs before starting the
+     * mutation so the mutation receives the correct
+     * selection even though the UI changes immediately.
+     */
+    const productIds = [...selectedIds];
+
+    /*
+     * Close the confirmation modal immediately because
+     * the bulk delete is optimistic.
+     */
+    setShowBulkDeleteModal(false);
+
+    bulkDeleteProductsMutation.mutate(productIds, {
+      onSuccess: () => {
+        dispatch(clearSelection());
+      },
+    });
+  };
+
+  const handleBulkStatusUpdate = (status) => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    const productIds = [...selectedIds];
+
+    bulkUpdateProductStatusMutation.mutate(
+      {
+        productIds,
+        status,
+      },
+      {
+        onSuccess: () => {
+          dispatch(clearSelection());
+        },
+      },
+    );
+  };
+
+  const handleMarkActive = () => {
+    handleBulkStatusUpdate("active");
+  };
+
+  const handleMarkInactive = () => {
+    handleBulkStatusUpdate("inactive");
   };
 
   /*
@@ -297,10 +370,7 @@ export default function ProductCatalog() {
       <div className="products-page">
         {toolbar}
 
-        <ProductErrorState
-          message={error?.message}
-          onRetry={refetch}
-        />
+        <ProductErrorState message={error?.message} onRetry={refetch} />
       </div>
     );
   }
@@ -360,15 +430,11 @@ export default function ProductCatalog() {
 
       <div className="table-heading">
         <div>
-          <p>
-            Browse, search, filter, and manage your
-            products.
-          </p>
+          <p>Browse, search, filter, and manage your products.</p>
         </div>
 
         <div className="table-meta">
-          {products.length}{" "}
-          {products.length === 1 ? "item" : "items"}
+          {products.length} {products.length === 1 ? "item" : "items"}
         </div>
       </div>
 
@@ -381,6 +447,13 @@ export default function ProductCatalog() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onClearSelection={handleClearSelection}
+        onDeleteSelected={handleBulkDelete}
+        onMarkActive={handleMarkActive}
+        onMarkInactive={handleMarkInactive}
+        isProcessing={
+          bulkDeleteProductsMutation.isPending ||
+          bulkUpdateProductStatusMutation.isPending
+        }
       />
 
       <ProductPagination
@@ -402,13 +475,21 @@ export default function ProductCatalog() {
 
       {productModal && (
         <ProductFormModal
-          key={`${productModal.mode}-${
-            productModal.product?.id ?? "new"
-          }`}
+          key={`${productModal.mode}-${productModal.product?.id ?? "new"}`}
           mode={productModal.mode}
           product={productModal.product}
           onClose={handleCloseProductModal}
           onSubmit={handleProductSubmit}
+          isSubmitting={
+            productModal.mode === "edit"
+              ? updateProductMutation.isPending
+              : createProductMutation.isPending
+          }
+          submissionError={
+            productModal.mode === "edit"
+              ? updateProductMutation.error
+              : createProductMutation.error
+          }
         />
       )}
 
@@ -417,6 +498,18 @@ export default function ProductCatalog() {
           product={productToDelete}
           onClose={handleCloseDeleteModal}
           onConfirm={handleDeleteConfirm}
+          isDeleting={deleteProductMutation.isPending}
+          deletionError={deleteProductMutation.error}
+        />
+      )}
+
+      {showBulkDeleteModal && (
+        <BulkDeleteProductsModal
+          productCount={selectedProductCount}
+          onClose={handleCloseBulkDeleteModal}
+          onConfirm={handleBulkDeleteConfirm}
+          isDeleting={bulkDeleteProductsMutation.isPending}
+          deletionError={bulkDeleteProductsMutation.error}
         />
       )}
     </div>
