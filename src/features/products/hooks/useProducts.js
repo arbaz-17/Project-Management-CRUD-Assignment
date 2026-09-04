@@ -7,11 +7,16 @@ export function useProducts(params) {
 
   return useQuery({
     queryKey: ["products", params],
-    queryFn: () =>
-      getProducts({
-        ...params,
-        limit: requestedLimit + 1,
-      }),
+
+    queryFn: ({ signal }) =>
+      getProducts(
+        {
+          ...params,
+          limit: requestedLimit + 1,
+        },
+        signal,
+      ),
+
     placeholderData: keepPreviousData,
 
     select: (products) => {

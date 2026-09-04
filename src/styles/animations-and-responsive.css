@@ -1,0 +1,176 @@
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .toolbar-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search-box {
+    max-width: none;
+  }
+
+  .toolbar-actions {
+    flex-wrap: wrap;
+  }
+
+  .toolbar-actions .toolbar-button-primary {
+    margin-left: auto;
+  }
+
+  .filter-panel {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 24px 14px 32px;
+  }
+
+  .app-header {
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  .app-header-decoration {
+    display: none;
+  }
+
+  .product-toolbar {
+    padding: 12px;
+  }
+
+  .toolbar-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 44px;
+  }
+
+  .toolbar-actions .toolbar-button-primary {
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+
+  .toolbar-button {
+    width: 100%;
+  }
+
+  .refresh-label {
+    display: none;
+  }
+
+  .filter-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filter-group {
+    min-width: 0;
+  }
+
+  .clear-filters {
+    justify-content: flex-start;
+  }
+
+  .table-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination-controls {
+    width: 100%;
+  }
+
+  .pagination-button {
+    flex: 1;
+  }
+
+  .page-indicator {
+    flex: 0 0 40px;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .modal,
+  .modal-delete {
+    width: 100%;
+    border-radius: 18px 18px 12px 12px;
+  }
+
+  .modal-header {
+    padding: 22px 20px 18px;
+  }
+
+  .product-form {
+    padding: 20px 20px 0;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .modal-footer {
+    padding: 16px 20px 18px;
+  }
+
+  .modal-delete {
+    padding: 24px 20px 20px;
+  }
+
+  .modal-delete .modal-footer {
+    margin: 24px -20px -20px;
+    padding: 16px 20px 18px;
+  }
+
+  .modal-button {
+    flex: 1;
+  }
+}

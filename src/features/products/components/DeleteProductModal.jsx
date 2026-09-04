@@ -1,7 +1,4 @@
-import {
-  AlertTriangle,
-  Trash2,
-} from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 export default function DeleteProductModal({
   product,
@@ -35,14 +32,11 @@ export default function DeleteProductModal({
         </div>
 
         <div className="delete-content">
-          <h2 id="delete-product-title">
-            Delete this product?
-          </h2>
+          <h2 id="delete-product-title">Delete this product?</h2>
 
           <p>
-            You are about to delete{" "}
-            <strong>{product?.title}</strong>. This action
-            cannot be undone.
+            You are about to delete <strong>{product?.title}</strong>. This
+            action cannot be undone.
           </p>
 
           {deletionError && (
@@ -71,9 +65,7 @@ export default function DeleteProductModal({
           >
             <Trash2 size={16} />
 
-            {isDeleting
-              ? "Deleting..."
-              : "Delete product"}
+            {isDeleting ? "Deleting..." : "Delete product"}
           </button>
         </div>
       </div>

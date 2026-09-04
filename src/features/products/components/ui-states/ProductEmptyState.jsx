@@ -1,31 +1,19 @@
-import {
-  PackageOpen,
-  SearchX,
-} from "lucide-react";
+import { PackageOpen, SearchX } from "lucide-react";
 
-export default function ProductEmptyState({
-  hasFilters,
-  onClearFilters,
-}) {
+export default function ProductEmptyState({ hasFilters, onClearFilters }) {
   return (
     <div className="products-state products-empty-state">
       <div className="state-icon">
-        {hasFilters ? (
-          <SearchX size={26} />
-        ) : (
-          <PackageOpen size={26} />
-        )}
+        {hasFilters ? <SearchX size={26} /> : <PackageOpen size={26} />}
       </div>
 
       <h3>
-        {hasFilters
-          ? "No products match your filters"
-          : "No products yet"}
+        {hasFilters ? "No such product exists" : "No products yet"}
       </h3>
 
       <p>
         {hasFilters
-          ? "Try adjusting your search or filters to find what you're looking for."
+          ? "No product matches the current search or filters. Try changing your filters."
           : "Your product catalog is currently empty."}
       </p>
 
