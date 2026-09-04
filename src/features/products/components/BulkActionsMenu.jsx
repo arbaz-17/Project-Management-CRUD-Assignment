@@ -19,7 +19,6 @@ export default function BulkActionsMenu({
 
   const handleAction = (action) => {
     setIsOpen(false);
-
     action();
   };
 
@@ -33,25 +32,17 @@ export default function BulkActionsMenu({
         aria-haspopup="menu"
         disabled={isProcessing}
       >
-        {isProcessing
-          ? "Processing..."
-          : "Bulk Actions"}
-
+        {isProcessing ? "Processing..." : "Bulk Actions"}
         <ChevronDown size={15} />
       </button>
 
       {isOpen && !isProcessing && (
-        <div
-          className="bulk-actions-dropdown"
-          role="menu"
-        >
+        <div className="bulk-actions-dropdown" role="menu">
           <button
             type="button"
             className="bulk-action-item"
             role="menuitem"
-            onClick={() =>
-              handleAction(onDeleteSelected)
-            }
+            onClick={() => handleAction(onDeleteSelected)}
           >
             <Trash2 size={15} />
             Delete selected
@@ -61,9 +52,7 @@ export default function BulkActionsMenu({
             type="button"
             className="bulk-action-item"
             role="menuitem"
-            onClick={() =>
-              handleAction(onMarkActive)
-            }
+            onClick={() => handleAction(onMarkActive)}
           >
             Mark active
           </button>
@@ -72,9 +61,7 @@ export default function BulkActionsMenu({
             type="button"
             className="bulk-action-item"
             role="menuitem"
-            onClick={() =>
-              handleAction(onMarkInactive)
-            }
+            onClick={() => handleAction(onMarkInactive)}
           >
             Mark inactive
           </button>

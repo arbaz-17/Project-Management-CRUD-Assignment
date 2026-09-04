@@ -31,7 +31,8 @@
 }
 
 .table-card {
-  overflow: hidden;
+  /* FIX: Changed from hidden to visible to prevent dropdown clipping */
+  overflow: visible; 
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -41,6 +42,9 @@
 .table-scroll {
   width: 100%;
   overflow-x: auto;
+  /* FIX: Establish stacking context for the table to stay below dropdown */
+  position: relative;
+  z-index: 1;
 }
 
 .product-table {
@@ -64,6 +68,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
+}
+
+/* FIX: Ensure table header respects rounded corners now that card overflow is visible */
+.product-table th:first-child {
+  border-top-left-radius: calc(var(--radius-lg) - 1px);
+}
+.product-table th:last-child {
+  border-top-right-radius: calc(var(--radius-lg) - 1px);
 }
 
 .product-table td {
@@ -213,6 +225,10 @@
 }
 
 .selection-bar {
+  /* FIX: Establish a higher stacking context so the bar covers the table */
+  position: relative;
+  z-index: 20;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -222,6 +238,10 @@
   background: var(--accent-soft);
   color: var(--text-secondary);
   font-size: 0.78rem;
+  
+  /* FIX: Preserve rounded corners now that card overflow is visible */
+  border-bottom-left-radius: calc(var(--radius-lg) - 1px);
+  border-bottom-right-radius: calc(var(--radius-lg) - 1px);
 }
 
 .selection-bar strong {

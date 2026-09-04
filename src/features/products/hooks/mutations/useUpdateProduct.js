@@ -3,49 +3,39 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { updateProductStatus } from "../../../services/productApi.js";
+import { updateProduct } from "../../../../services/productApi.js";
 
-export function useBulkUpdateProductStatus() {
+export function useUpdateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ productIds, status }) => {
-      const results = await Promise.allSettled(
-        productIds.map((id) =>
-          updateProductStatus({
-            id,
-            status,
-          })
-        )
-      );
+    mutationFn: updateProduct,
 
-      const failedResults = results.filter(
-        (result) => result.status === "rejected"
-      );
-
-      if (failedResults.length > 0) {
-        throw new Error(
-          `Failed to update ${failedResults.length} product${
-            failedResults.length === 1 ? "" : "s"
-          }.`
-        );
-      }
-
-      return results;
-    },
-
-    onMutate: async ({ productIds, status }) => {
+    onMutate: async ({ id, data }) => {
+      /*
+       * Stop any product queries that are currently
+       * fetching so they don't overwrite our optimistic
+       * change with older server data.
+       */
       await queryClient.cancelQueries({
         queryKey: ["products"],
       });
 
+      /*
+       * Save every cached product query so we can
+       * restore the previous state if the mutation fails.
+       */
       const previousQueries =
         queryClient.getQueriesData({
           queryKey: ["products"],
         });
 
-      const productIdSet = new Set(productIds);
-
+      /*
+       * Update every cached product list immediately.
+       *
+       * The actual query cache contains the raw API array,
+       * not the data returned by useProducts' select function.
+       */
       queryClient.setQueriesData(
         {
           queryKey: ["products"],
@@ -56,22 +46,30 @@ export function useBulkUpdateProductStatus() {
           }
 
           return oldProducts.map((product) =>
-            productIdSet.has(product.id)
+            product.id === id
               ? {
                   ...product,
-                  status,
+                  ...data,
                 }
               : product
           );
         }
       );
 
+      /*
+       * This context is passed to onError so we can
+       * rollback the optimistic update.
+       */
       return {
         previousQueries,
       };
     },
 
     onError: (_error, _variables, context) => {
+      /*
+       * Restore every cached query to the exact state
+       * it had before the optimistic update.
+       */
       context?.previousQueries?.forEach(
         ([queryKey, previousData]) => {
           queryClient.setQueryData(
@@ -83,6 +81,10 @@ export function useBulkUpdateProductStatus() {
     },
 
     onSettled: () => {
+      /*
+       * Whether the request succeeds or fails, refetch
+       * the server state so the cache ends up authoritative.
+       */
       queryClient.invalidateQueries({
         queryKey: ["products"],
       });
