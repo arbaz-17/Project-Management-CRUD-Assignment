@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner"; // Added sonner import
+import { toast } from "sonner";
 
 import { useProducts } from "../hooks/queries/useProducts.js";
 import { useProductParams } from "../hooks/params/useProductParams.js";
@@ -59,7 +59,7 @@ export default function ProductCatalog() {
     refetch,
   } = useProducts({
     page,
-    limit: 10,
+    limit: 6,
     title,
     category,
     status,
@@ -130,7 +130,6 @@ export default function ProductCatalog() {
     if (productModal.mode === "edit") {
       const productId = productModal.product.id;
       
-      // Close modal immediately
       setProductModal(null);
 
       updateProductMutation.mutate(
@@ -143,7 +142,6 @@ export default function ProductCatalog() {
       return;
     }
 
-    // Close modal immediately for Create
     setProductModal(null);
 
     createProductMutation.mutate(formData, {
@@ -163,7 +161,6 @@ export default function ProductCatalog() {
   const handleDeleteConfirm = (product) => {
     const productId = product.id;
     
-    // Close modal immediately
     setProductToDelete(null);
 
     deleteProductMutation.mutate(productId, {
@@ -185,7 +182,6 @@ export default function ProductCatalog() {
     if (selectedIds.length === 0) return;
     const productIds = [...selectedIds];
 
-    // Close immediately and clear selection for optimistic UX
     setShowBulkDeleteModal(false);
     dispatch(clearSelection());
 
@@ -199,7 +195,6 @@ export default function ProductCatalog() {
     if (selectedIds.length === 0) return;
     const productIds = [...selectedIds];
 
-    // Clear selection instantly to match the immediate optimistic UI update
     dispatch(clearSelection());
 
     bulkUpdateProductStatusMutation.mutate(
@@ -242,7 +237,6 @@ export default function ProductCatalog() {
       product={productModal.product}
       onClose={handleCloseProductModal}
       onSubmit={handleProductSubmit}
-      // Removed isSubmitting and submissionError since it closes immediately
     />
   );
 
@@ -344,7 +338,6 @@ export default function ProductCatalog() {
           product={productToDelete}
           onClose={handleCloseDeleteModal}
           onConfirm={handleDeleteConfirm}
-          // Removed isDeleting and deletionError props
         />
       )}
 
@@ -353,7 +346,6 @@ export default function ProductCatalog() {
           productCount={selectedProductCount}
           onClose={handleCloseBulkDeleteModal}
           onConfirm={handleBulkDeleteConfirm}
-          // Removed isDeleting and deletionError props
         />
       )}
     </div>
