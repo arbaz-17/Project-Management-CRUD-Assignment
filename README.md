@@ -140,7 +140,7 @@ These values are temporary UI concerns and do not need to be stored in Redux or 
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/arbaz-17/Product-Management-CRUD-Assignment.git
 cd Product-Management-CRUD-Assignment
 ```
 
@@ -155,27 +155,8 @@ npm install
 ```bash
 npm run dev
 ```
-
-The application will be available at the local URL shown by Vite, typically:
-
-```text
-http://localhost:5173
-```
-
-### 4. Build for production
-
-```bash
-npm run build
-```
-
-### 5. Run linting
-
-```bash
-npm run lint
-```
-
 ---
 
 ## Demo Link
 
-**Live Demo:** _To be added_
+[Live Demo](https://arbaz-17.github.io/Product-Management-CRUD-Assignment/)

@@ -4,11 +4,9 @@ export default function BulkDeleteProductsModal({
   productCount,
   onClose,
   onConfirm,
-  isDeleting = false,
-  deletionError = null,
 }) {
-  const handleConfirm = async () => {
-    await onConfirm();
+  const handleConfirm = () => {
+    onConfirm();
   };
 
   return (
@@ -38,13 +36,6 @@ export default function BulkDeleteProductsModal({
             You are about to delete <strong>{productCount} products</strong>.
             This action cannot be undone.
           </p>
-
-          {deletionError && (
-            <div className="form-error">
-              {deletionError.message ||
-                "Failed to delete selected products. Please try again."}
-            </div>
-          )}
         </div>
 
         <div className="modal-footer">
@@ -52,7 +43,6 @@ export default function BulkDeleteProductsModal({
             type="button"
             className="modal-button modal-button-secondary"
             onClick={onClose}
-            disabled={isDeleting}
           >
             Cancel
           </button>
@@ -61,11 +51,9 @@ export default function BulkDeleteProductsModal({
             type="button"
             className="modal-button modal-button-danger"
             onClick={handleConfirm}
-            disabled={isDeleting}
           >
             <Trash2 size={16} />
-
-            {isDeleting ? "Deleting..." : "Delete products"}
+            Delete products
           </button>
         </div>
       </div>

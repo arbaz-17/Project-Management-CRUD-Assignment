@@ -1,4 +1,4 @@
-import { DollarSign, Package, Tag, X } from "lucide-react";
+import { Banknote, Package, Tag, X } from "lucide-react";
 import { useState } from "react";
 
 import { validateProductForm } from "../../../utils/productValidation";
@@ -41,8 +41,6 @@ export default function ProductFormModal({
   product = null,
   onClose,
   onSubmit,
-  isSubmitting = false,
-  submissionError = null,
 }) {
   const isEditMode = mode === "edit";
 
@@ -61,7 +59,7 @@ export default function ProductFormModal({
     }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
     const validationErrors = validateProductForm(formData);
@@ -73,7 +71,7 @@ export default function ProductFormModal({
 
     setErrors({});
 
-    await onSubmit({
+    onSubmit({
       ...formData,
       title: formData.title.trim(),
       price: Number(formData.price),
@@ -115,7 +113,6 @@ export default function ProductFormModal({
             className="modal-close-button"
             onClick={onClose}
             aria-label="Close modal"
-            disabled={isSubmitting}
           >
             <X size={19} />
           </button>
@@ -139,13 +136,10 @@ export default function ProductFormModal({
                 onChange={(event) => updateField("title", event.target.value)}
                 placeholder="e.g. Wireless Headphones"
                 autoFocus
-                disabled={isSubmitting}
               />
             </div>
 
-            {errors.title && (
-              <span className="form-error">{errors.title}</span>
-            )}
+            {errors.title && <span className="form-error">{errors.title}</span>}
           </div>
 
           <div className="form-grid">
@@ -157,7 +151,7 @@ export default function ProductFormModal({
                   errors.price ? "has-error" : ""
                 }`}
               >
-                <DollarSign size={16} />
+                <Banknote size={16} />
 
                 <input
                   id="product-price"
@@ -165,11 +159,8 @@ export default function ProductFormModal({
                   min="0"
                   step="0.01"
                   value={formData.price}
-                  onChange={(event) =>
-                    updateField("price", event.target.value)
-                  }
+                  onChange={(event) => updateField("price", event.target.value)}
                   placeholder="0.00"
-                  disabled={isSubmitting}
                 />
               </div>
 
@@ -194,11 +185,8 @@ export default function ProductFormModal({
                   min="0"
                   step="1"
                   value={formData.stock}
-                  onChange={(event) =>
-                    updateField("stock", event.target.value)
-                  }
+                  onChange={(event) => updateField("stock", event.target.value)}
                   placeholder="0"
-                  disabled={isSubmitting}
                 />
               </div>
 
@@ -219,7 +207,6 @@ export default function ProductFormModal({
                 onChange={(event) =>
                   updateField("category", event.target.value)
                 }
-                disabled={isSubmitting}
               >
                 <option value="">Select category</option>
 
@@ -242,10 +229,7 @@ export default function ProductFormModal({
                 id="product-status"
                 className={errors.status ? "has-error" : ""}
                 value={formData.status}
-                onChange={(event) =>
-                  updateField("status", event.target.value)
-                }
-                disabled={isSubmitting}
+                onChange={(event) => updateField("status", event.target.value)}
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -257,33 +241,17 @@ export default function ProductFormModal({
             </div>
           </div>
 
-          {submissionError && (
-            <div className="form-error">
-              {submissionError.message ||
-                "Failed to save product. Please try again."}
-            </div>
-          )}
-
           <div className="modal-footer">
             <button
               type="button"
               className="modal-button modal-button-secondary"
               onClick={onClose}
-              disabled={isSubmitting}
             >
               Cancel
             </button>
 
-            <button
-              type="submit"
-              className="modal-button modal-button-primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting
-                ? "Saving..."
-                : isEditMode
-                  ? "Save changes"
-                  : "Add product"}
+            <button type="submit" className="modal-button modal-button-primary">
+              {isEditMode ? "Save changes" : "Add product"}
             </button>
           </div>
         </form>
