@@ -135,6 +135,11 @@ These values are temporary UI concerns and do not need to be stored in Redux or 
 
 ---
 
+## State Decision Document
+[Document](https://docs.google.com/document/d/18QZGXkYCfbnQO2UE0ghUdYl_palyILeXWOILRWUfVow/edit?usp=sharing)
+
+---
+
 ## Local Setup
 
 ### 1. Clone the repository
