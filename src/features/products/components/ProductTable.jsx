@@ -2,7 +2,6 @@ import { Pencil, Search, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import BulkActionsMenu from "./BulkActionsMenu";
-import ProductTableSkeleton from "./ProductTableSkeleton";
 import { formatCategory,formatDate,formatPrice } from "../../../utils/formatters";
 
 export default function ProductTable({
@@ -209,4 +208,3 @@ export default function ProductTable({
   );
 }
 
-export { ProductTableSkeleton };

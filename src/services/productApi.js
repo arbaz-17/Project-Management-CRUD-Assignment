@@ -11,13 +11,11 @@ export async function getProducts(params = {}, signal) {
   });
 
   const queryString = searchParams.toString();
-
   const url = queryString ? `${API_URL}?${queryString}` : API_URL;
-
   const response = await fetch(url, {
     signal,
   });
-  
+
   if (response.status === 404) {
     return [];
   }
@@ -29,7 +27,6 @@ export async function getProducts(params = {}, signal) {
   }
 
   const data = await response.json();
-
   return data;
 }
 

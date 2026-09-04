@@ -3,36 +3,44 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { deleteProduct } from "../../../services/productApi.js";
+import { deleteProduct } from "../../../../services/productApi.js";
 
-export function useDeleteProduct() {
+export function useBulkDeleteProducts() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteProduct,
+    mutationFn: async (productIds) => {
+      const results = await Promise.allSettled(
+        productIds.map((id) => deleteProduct(id))
+      );
 
-    onMutate: async (productId) => {
-      /*
-       * Prevent an in-flight product query from
-       * overwriting our optimistic deletion.
-       */
+      const failedResults = results.filter(
+        (result) => result.status === "rejected"
+      );
+
+      if (failedResults.length > 0) {
+        throw new Error(
+          `Failed to delete ${failedResults.length} product${
+            failedResults.length === 1 ? "" : "s"
+          }.`
+        );
+      }
+
+      return results;
+    },
+
+    onMutate: async (productIds) => {
       await queryClient.cancelQueries({
         queryKey: ["products"],
       });
 
-      /*
-       * Save all currently cached product lists so
-       * we can restore them if DELETE fails.
-       */
       const previousQueries =
         queryClient.getQueriesData({
           queryKey: ["products"],
         });
 
-      /*
-       * Remove the product immediately from every
-       * cached product list.
-       */
+      const productIdSet = new Set(productIds);
+
       queryClient.setQueriesData(
         {
           queryKey: ["products"],
@@ -43,24 +51,17 @@ export function useDeleteProduct() {
           }
 
           return oldProducts.filter(
-            (product) => product.id !== productId
+            (product) => !productIdSet.has(product.id)
           );
         }
       );
 
-      /*
-       * Return the snapshot for rollback.
-       */
       return {
         previousQueries,
       };
     },
 
-    onError: (_error, _productId, context) => {
-      /*
-       * Restore every cached product query to the
-       * state it had before the optimistic delete.
-       */
+    onError: (_error, _productIds, context) => {
       context?.previousQueries?.forEach(
         ([queryKey, previousData]) => {
           queryClient.setQueryData(
@@ -72,10 +73,6 @@ export function useDeleteProduct() {
     },
 
     onSettled: () => {
-      /*
-       * Confirm the cache against the server whether
-       * the DELETE succeeded or failed.
-       */
       queryClient.invalidateQueries({
         queryKey: ["products"],
       });

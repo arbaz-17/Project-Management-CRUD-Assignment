@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import { getProducts } from "../../../services/productApi.js";
+import { getProducts } from "../../../../services/productApi.js";
 
 export function useProducts(params) {
   const requestedLimit = params.limit;

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
-
+import { Toaster } from "sonner";
 import ProductCatalog from "./features/products/components/ProductCatalog";
 import { selectTheme } from "./lib/redux/selectors.js";
 
@@ -29,6 +29,7 @@ function App() {
       </header>
 
       <ProductCatalog />
+      <Toaster richColors theme={theme} position="top-center" />
     </main>
   );
 }

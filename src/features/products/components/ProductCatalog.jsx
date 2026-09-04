@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner"; // Added sonner import
 
-import { useProducts } from "../hooks/useProducts";
-import { useProductParams } from "../hooks/useProductParams";
-import { useCreateProduct } from "../hooks/useCreateProduct";
-import { useUpdateProduct } from "../hooks/useUpdateProduct";
-import { useDeleteProduct } from "../hooks/useDeleteProduct";
-import { useBulkDeleteProducts } from "../hooks/useBulkDeleteProducts";
-import { useBulkUpdateProductStatus } from "../hooks/useBulkUpdateProductStatus";
+import { useProducts } from "../hooks/queries/useProducts.js";
+import { useProductParams } from "../hooks/params/useProductParams.js";
+import { useCreateProduct } from "../hooks/mutations/useCreateProduct.js";
+import { useUpdateProduct } from "../hooks/mutations/useUpdateProduct.js";
+import { useDeleteProduct } from "../hooks/mutations/useDeleteProduct.js";
+import { useBulkDeleteProducts } from "../hooks/mutations/useBulkDeleteProducts.js";
+import { useBulkUpdateProductStatus } from "../hooks/mutations/useBulkUpdateProductStatus.js";
 
 import {
   clearSelection,
@@ -33,7 +34,6 @@ import ProductToolbar from "./ProductToolbar";
 
 export default function ProductCatalog() {
   const { page, title, category, status, updateParams } = useProductParams();
-
   const dispatch = useDispatch();
 
   const createProductMutation = useCreateProduct();
@@ -67,48 +67,28 @@ export default function ProductCatalog() {
 
   const products = data?.products ?? [];
   const hasNextPage = data?.hasNextPage ?? false;
-
   const hasActiveFilters = Boolean(title || category || status);
-
   const visibleSelectedIds = selectedIds.filter((id) =>
     products.some((product) => product.id === id),
   );
 
   const handleSearch = (searchTitle) => {
-    updateParams({
-      title: searchTitle,
-      page: 1,
-    });
-
+    updateParams({ title: searchTitle, page: 1 });
     dispatch(clearSelection());
   };
 
   const handleCategoryChange = (event) => {
-    updateParams({
-      category: event.target.value,
-      page: 1,
-    });
-
+    updateParams({ category: event.target.value, page: 1 });
     dispatch(clearSelection());
   };
 
   const handleStatusChange = (event) => {
-    updateParams({
-      status: event.target.value,
-      page: 1,
-    });
-
+    updateParams({ status: event.target.value, page: 1 });
     dispatch(clearSelection());
   };
 
   const handleClearFilters = () => {
-    updateParams({
-      title: "",
-      category: "",
-      status: "",
-      page: 1,
-    });
-
+    updateParams({ title: "", category: "", status: "", page: 1 });
     dispatch(clearSelection());
   };
 
@@ -117,20 +97,14 @@ export default function ProductCatalog() {
   };
 
   const handleToggleAll = () => {
-    if (products.length === 0) {
-      return;
-    }
-
+    if (products.length === 0) return;
     const productIds = products.map((product) => product.id);
-
     const allSelected = productIds.every((id) => selectedIds.includes(id));
 
     if (allSelected) {
       dispatch(deselectProducts(productIds));
-
       return;
     }
-
     dispatch(selectProducts(productIds));
   };
 
@@ -139,44 +113,43 @@ export default function ProductCatalog() {
   };
 
   const handleAdd = () => {
-    setProductModal({
-      mode: "add",
-      product: null,
-    });
+    setProductModal({ mode: "add", product: null });
   };
 
   const handleEdit = (product) => {
-    setProductModal({
-      mode: "edit",
-      product,
-    });
+    setProductModal({ mode: "edit", product });
   };
 
   const handleCloseProductModal = () => {
     setProductModal(null);
   };
 
-  const handleProductSubmit = async (formData) => {
-    if (!productModal) {
-      return;
-    }
+  const handleProductSubmit = (formData) => {
+    if (!productModal) return;
 
     if (productModal.mode === "edit") {
       const productId = productModal.product.id;
-
+      
+      // Close modal immediately
       setProductModal(null);
 
-      updateProductMutation.mutate({
-        id: productId,
-        data: formData,
-      });
-
+      updateProductMutation.mutate(
+        { id: productId, data: formData },
+        {
+          onSuccess: () => toast.success("Product updated successfully"),
+          onError: () => toast.error("Failed to update product"),
+        }
+      );
       return;
     }
 
-    await createProductMutation.mutateAsync(formData);
-
+    // Close modal immediately for Create
     setProductModal(null);
+
+    createProductMutation.mutate(formData, {
+      onSuccess: () => toast.success("Product created successfully"),
+      onError: () => toast.error("Failed to create product"),
+    });
   };
 
   const handleDelete = (product) => {
@@ -189,61 +162,52 @@ export default function ProductCatalog() {
 
   const handleDeleteConfirm = (product) => {
     const productId = product.id;
-
+    
+    // Close modal immediately
     setProductToDelete(null);
 
-    deleteProductMutation.mutate(productId);
+    deleteProductMutation.mutate(productId, {
+      onSuccess: () => toast.success("Product deleted successfully"),
+      onError: () => toast.error("Failed to delete product"),
+    });
   };
 
   const handleBulkDelete = () => {
-    if (selectedIds.length === 0) {
-      return;
-    }
-
+    if (selectedIds.length === 0) return;
     setShowBulkDeleteModal(true);
   };
 
   const handleCloseBulkDeleteModal = () => {
-    if (bulkDeleteProductsMutation.isPending) {
-      return;
-    }
-
     setShowBulkDeleteModal(false);
   };
 
   const handleBulkDeleteConfirm = () => {
-    if (selectedIds.length === 0) {
-      return;
-    }
-
+    if (selectedIds.length === 0) return;
     const productIds = [...selectedIds];
 
+    // Close immediately and clear selection for optimistic UX
     setShowBulkDeleteModal(false);
+    dispatch(clearSelection());
 
     bulkDeleteProductsMutation.mutate(productIds, {
-      onSuccess: () => {
-        dispatch(clearSelection());
-      },
+      onSuccess: () => toast.success("Products deleted successfully"),
+      onError: () => toast.error("Failed to delete products"),
     });
   };
 
   const handleBulkStatusUpdate = (status) => {
-    if (selectedIds.length === 0) {
-      return;
-    }
-
+    if (selectedIds.length === 0) return;
     const productIds = [...selectedIds];
 
+    // Clear selection instantly to match the immediate optimistic UI update
+    dispatch(clearSelection());
+
     bulkUpdateProductStatusMutation.mutate(
+      { productIds, status },
       {
-        productIds,
-        status,
-      },
-      {
-        onSuccess: () => {
-          dispatch(clearSelection());
-        },
-      },
+        onSuccess: () => toast.success(`Products marked as ${status}`),
+        onError: () => toast.error("Failed to update product status"),
+      }
     );
   };
 
@@ -271,14 +235,6 @@ export default function ProductCatalog() {
     />
   );
 
-  /*
-   * Keep the product form modal independent from the catalog's
-   * loading/error/empty states.
-   *
-   * Without this, clicking "Create Product" could update
-   * productModal state while the component returned early from
-   * one of those states, meaning the modal was never rendered.
-   */
   const productFormModal = productModal && (
     <ProductFormModal
       key={`${productModal.mode}-${productModal.product?.id ?? "new"}`}
@@ -286,16 +242,7 @@ export default function ProductCatalog() {
       product={productModal.product}
       onClose={handleCloseProductModal}
       onSubmit={handleProductSubmit}
-      isSubmitting={
-        productModal.mode === "edit"
-          ? updateProductMutation.isPending
-          : createProductMutation.isPending
-      }
-      submissionError={
-        productModal.mode === "edit"
-          ? updateProductMutation.error
-          : createProductMutation.error
-      }
+      // Removed isSubmitting and submissionError since it closes immediately
     />
   );
 
@@ -303,9 +250,7 @@ export default function ProductCatalog() {
     return (
       <div className="products-page">
         {toolbar}
-
         <ProductLoadingState />
-
         {productFormModal}
       </div>
     );
@@ -315,12 +260,7 @@ export default function ProductCatalog() {
     return (
       <div className="products-page">
         {toolbar}
-
-        <ProductErrorState
-          message={error?.message}
-          onRetry={refetch}
-        />
-
+        <ProductErrorState message={error?.message} onRetry={refetch} />
         {productFormModal}
       </div>
     );
@@ -330,9 +270,7 @@ export default function ProductCatalog() {
     return (
       <div className="products-page">
         {toolbar}
-
         <ProductLoadingState message="Loading products..." />
-
         {productFormModal}
       </div>
     );
@@ -342,29 +280,18 @@ export default function ProductCatalog() {
     return (
       <div className="products-page">
         {toolbar}
-
         <ProductEmptyState
           hasFilters={hasActiveFilters}
           onClearFilters={handleClearFilters}
         />
-
         <ProductPagination
           page={page}
           hasNextPage={false}
-          onPrevious={() =>
-            updateParams({
-              page: page - 1,
-            })
-          }
-          onNext={() =>
-            updateParams({
-              page: page + 1,
-            })
-          }
+          onPrevious={() => updateParams({ page: page - 1 })}
+          onNext={() => updateParams({ page: page + 1 })}
           isDisabled={true}
           isFetching={false}
         />
-
         {productFormModal}
       </div>
     );
@@ -378,10 +305,8 @@ export default function ProductCatalog() {
         <div>
           <p>Browse, search, filter, and manage your products.</p>
         </div>
-
         <div className="table-meta">
-          {products.length}{" "}
-          {products.length === 1 ? "item" : "items"}
+          {products.length} {products.length === 1 ? "item" : "items"}
         </div>
       </div>
 
@@ -406,16 +331,8 @@ export default function ProductCatalog() {
       <ProductPagination
         page={page}
         hasNextPage={hasNextPage}
-        onPrevious={() =>
-          updateParams({
-            page: page - 1,
-          })
-        }
-        onNext={() =>
-          updateParams({
-            page: page + 1,
-          })
-        }
+        onPrevious={() => updateParams({ page: page - 1 })}
+        onNext={() => updateParams({ page: page + 1 })}
         isDisabled={isPlaceholderData}
         isFetching={isFetching}
       />
@@ -427,8 +344,7 @@ export default function ProductCatalog() {
           product={productToDelete}
           onClose={handleCloseDeleteModal}
           onConfirm={handleDeleteConfirm}
-          isDeleting={deleteProductMutation.isPending}
-          deletionError={deleteProductMutation.error}
+          // Removed isDeleting and deletionError props
         />
       )}
 
@@ -437,8 +353,7 @@ export default function ProductCatalog() {
           productCount={selectedProductCount}
           onClose={handleCloseBulkDeleteModal}
           onConfirm={handleBulkDeleteConfirm}
-          isDeleting={bulkDeleteProductsMutation.isPending}
-          deletionError={bulkDeleteProductsMutation.error}
+          // Removed isDeleting and deletionError props
         />
       )}
     </div>
