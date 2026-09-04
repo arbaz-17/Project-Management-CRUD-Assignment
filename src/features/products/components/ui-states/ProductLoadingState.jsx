@@ -11,9 +11,7 @@ export default function ProductLoadingState({
 
       <h3>{message}</h3>
 
-      <p>
-        Please wait while we fetch the latest products.
-      </p>
+      <p>Please wait while we fetch the latest products.</p>
     </div>
   );
 }

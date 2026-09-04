@@ -1,7 +1,4 @@
-import {
-  AlertTriangle,
-  Trash2,
-} from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 export default function BulkDeleteProductsModal({
   productCount,
@@ -35,14 +32,11 @@ export default function BulkDeleteProductsModal({
         </div>
 
         <div className="delete-content">
-          <h2 id="bulk-delete-products-title">
-            Delete selected products?
-          </h2>
+          <h2 id="bulk-delete-products-title">Delete selected products?</h2>
 
           <p>
-            You are about to delete{" "}
-            <strong>{productCount} products</strong>. This
-            action cannot be undone.
+            You are about to delete <strong>{productCount} products</strong>.
+            This action cannot be undone.
           </p>
 
           {deletionError && (
@@ -71,9 +65,7 @@ export default function BulkDeleteProductsModal({
           >
             <Trash2 size={16} />
 
-            {isDeleting
-              ? "Deleting..."
-              : "Delete products"}
+            {isDeleting ? "Deleting..." : "Delete products"}
           </button>
         </div>
       </div>

@@ -2,115 +2,8 @@ import { Pencil, Search, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import BulkActionsMenu from "./BulkActionsMenu";
-
-function formatCategory(category) {
-  if (!category) {
-    return "—";
-  }
-
-  return category
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function formatPrice(price) {
-  const numericPrice = Number(price);
-
-  if (Number.isNaN(numericPrice)) {
-    return "—";
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "PKR",
-  }).format(numericPrice);
-}
-
-function formatDate(date) {
-  if (!date) {
-    return "—";
-  }
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(parsedDate);
-}
-
-function ProductTableSkeleton() {
-  return (
-    <div className="table-card">
-      <div className="table-scroll">
-        <table className="product-table">
-          <thead>
-            <tr>
-              <th className="checkbox-column">
-                <span className="skeleton skeleton-checkbox" />
-              </th>
-
-              <th>Product</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th className="action-column">Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <tr key={index}>
-                <td>
-                  <span className="skeleton skeleton-checkbox" />
-                </td>
-
-                <td>
-                  <span className="skeleton skeleton-title" />
-                </td>
-
-                <td>
-                  <span className="skeleton skeleton-text" />
-                </td>
-
-                <td>
-                  <span className="skeleton skeleton-price" />
-                </td>
-
-                <td>
-                  <span className="skeleton skeleton-stock" />
-                </td>
-
-                <td>
-                  <span className="skeleton skeleton-status" />
-                </td>
-
-                <td>
-                  <span className="skeleton skeleton-date" />
-                </td>
-
-                <td>
-                  <div className="skeleton-actions">
-                    <span className="skeleton skeleton-action" />
-                    <span className="skeleton skeleton-action" />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+import ProductTableSkeleton from "./ProductTableSkeleton";
+import { formatCategory,formatDate,formatPrice } from "../../../utils/formatters";
 
 export default function ProductTable({
   products,
@@ -135,11 +28,6 @@ export default function ProductTable({
 
   const someSelected = selectedCountOnCurrentPage > 0 && !allSelected;
 
-  /*
-   * The indeterminate property is a DOM property.
-   * It cannot be represented completely through
-   * the normal checked boolean.
-   */
   useEffect(() => {
     if (selectAllRef.current) {
       selectAllRef.current.indeterminate = someSelected;

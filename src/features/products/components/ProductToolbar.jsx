@@ -1,18 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  Filter,
-  Moon,
-  Plus,
-  RefreshCw,
-  Search,
-  Sun,
-  X,
-} from "lucide-react";
+import { Filter, Moon, Plus, RefreshCw, Search, Sun, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../../../lib/redux/appSlice.js";
 import { selectTheme } from "../../../lib/redux/selectors.js";
-
-
 
 export default function ProductToolbar({
   title,
@@ -27,9 +17,7 @@ export default function ProductToolbar({
   onRefresh,
   isFetching,
 }) {
-  const [showFilters, setShowFilters] = useState(
-    Boolean(category || status)
-  );
+  const [showFilters, setShowFilters] = useState(Boolean(category || status));
 
   const dispatch = useDispatch();
   const theme = useSelector(selectTheme);
@@ -95,9 +83,7 @@ export default function ProductToolbar({
             <span>Filters</span>
 
             {activeFilterCount > 0 && (
-              <span className="filter-count">
-                {activeFilterCount}
-              </span>
+              <span className="filter-count">{activeFilterCount}</span>
             )}
           </button>
 
@@ -108,31 +94,20 @@ export default function ProductToolbar({
             disabled={isFetching}
             title="Refresh products"
           >
-            <RefreshCw
-              size={17}
-              className={isFetching ? "spin" : undefined}
-            />
+            <RefreshCw size={17} className={isFetching ? "spin" : undefined} />
 
             <span className="refresh-label">Refresh</span>
           </button>
 
-<button
-  type="button"
-  className="theme-toggle"
-  onClick={() => dispatch(toggleTheme())}
-  aria-label={`Switch to ${
-    theme === "dark" ? "light" : "dark"
-  } mode`}
-  title={`Switch to ${
-    theme === "dark" ? "light" : "dark"
-  } mode`}
->
-  {theme === "dark" ? (
-    <Sun size={18} />
-  ) : (
-    <Moon size={18} />
-  )}
-</button>
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => dispatch(toggleTheme())}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
           <button
             type="button"
@@ -148,9 +123,7 @@ export default function ProductToolbar({
       {showFilters && (
         <div className="filter-panel">
           <div className="filter-group">
-            <label htmlFor="category-filter">
-              Category
-            </label>
+            <label htmlFor="category-filter">Category</label>
 
             <select
               id="category-filter"
@@ -159,27 +132,17 @@ export default function ProductToolbar({
             >
               <option value="">All categories</option>
               <option value="sports">Sports</option>
-              <option value="electronics">
-                Electronics
-              </option>
+              <option value="electronics">Electronics</option>
               <option value="books">Books</option>
               <option value="clothing">Clothing</option>
-              <option value="home-kitchen">
-                Home & Kitchen
-              </option>
+              <option value="home-kitchen">Home & Kitchen</option>
             </select>
           </div>
 
           <div className="filter-group">
-            <label htmlFor="status-filter">
-              Status
-            </label>
+            <label htmlFor="status-filter">Status</label>
 
-            <select
-              id="status-filter"
-              value={status}
-              onChange={onStatusChange}
-            >
+            <select id="status-filter" value={status} onChange={onStatusChange}>
               <option value="">All statuses</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>

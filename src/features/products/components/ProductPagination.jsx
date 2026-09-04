@@ -1,7 +1,4 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ProductPagination({
   page,
@@ -14,9 +11,7 @@ export default function ProductPagination({
   return (
     <footer className="pagination">
       <span className="pagination-status">
-        {isFetching
-          ? "Updating products..."
-          : `Page ${page}`}
+        {isFetching ? "Updating products..." : `Page ${page}`}
       </span>
 
       <div className="pagination-controls">

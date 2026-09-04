@@ -1,12 +1,6 @@
-import {
-  AlertCircle,
-  RefreshCw,
-} from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
-export default function ProductErrorState({
-  message,
-  onRetry,
-}) {
+export default function ProductErrorState({ message, onRetry }) {
   return (
     <div className="products-state products-error-state">
       <div className="state-icon state-icon-error">

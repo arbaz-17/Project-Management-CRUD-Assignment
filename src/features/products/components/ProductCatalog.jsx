@@ -43,28 +43,10 @@ export default function ProductCatalog() {
   const bulkUpdateProductStatusMutation = useBulkUpdateProductStatus();
 
   const selectedIds = useSelector(selectSelectedProductIds);
-
   const selectedProductCount = useSelector(selectSelectedProductCount);
 
-  /*
-   * Controls the Add/Edit modal.
-   *
-   * Example:
-   * { mode: "add", product: null }
-   *
-   * or:
-   * { mode: "edit", product: selectedProduct }
-   */
   const [productModal, setProductModal] = useState(null);
-
-  /*
-   * Product currently waiting for delete confirmation.
-   */
   const [productToDelete, setProductToDelete] = useState(null);
-
-  /*
-   * Controls the bulk delete confirmation modal.
-   */
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   const {
@@ -88,21 +70,9 @@ export default function ProductCatalog() {
 
   const hasActiveFilters = Boolean(title || category || status);
 
-  /*
-   * Only keep selected IDs that belong to the
-   * currently visible products.
-   *
-   * This is derived state, not Redux state.
-   */
   const visibleSelectedIds = selectedIds.filter((id) =>
     products.some((product) => product.id === id),
   );
-
-  /*
-   * --------------------------------------------------
-   * Search / filters
-   * --------------------------------------------------
-   */
 
   const handleSearch = (searchTitle) => {
     updateParams({
@@ -142,12 +112,6 @@ export default function ProductCatalog() {
     dispatch(clearSelection());
   };
 
-  /*
-   * --------------------------------------------------
-   * Row selection
-   * --------------------------------------------------
-   */
-
   const handleToggleRow = (id) => {
     dispatch(toggleProductSelection(id));
   };
@@ -170,22 +134,9 @@ export default function ProductCatalog() {
     dispatch(selectProducts(productIds));
   };
 
-  /*
-   * Clear all selected products.
-   *
-   * Selection is global client state owned by Redux.
-   * ProductTable remains presentational and receives
-   * this handler through props.
-   */
   const handleClearSelection = () => {
     dispatch(clearSelection());
   };
-
-  /*
-   * --------------------------------------------------
-   * Add / Edit modal
-   * --------------------------------------------------
-   */
 
   const handleAdd = () => {
     setProductModal({
@@ -213,10 +164,6 @@ export default function ProductCatalog() {
     if (productModal.mode === "edit") {
       const productId = productModal.product.id;
 
-      /*
-       * Close the modal immediately because the update
-       * is optimistic.
-       */
       setProductModal(null);
 
       updateProductMutation.mutate({
@@ -232,11 +179,6 @@ export default function ProductCatalog() {
     setProductModal(null);
   };
 
-  /*
-   * --------------------------------------------------
-   * Delete modal
-   * --------------------------------------------------
-   */
 
   const handleDelete = (product) => {
     setProductToDelete(product);
@@ -248,21 +190,11 @@ export default function ProductCatalog() {
 
   const handleDeleteConfirm = (product) => {
     const productId = product.id;
-
-    /*
-     * Close the confirmation modal immediately
-     * because delete is optimistic.
-     */
     setProductToDelete(null);
 
     deleteProductMutation.mutate(productId);
   };
 
-  /*
-   * --------------------------------------------------
-   * Bulk delete
-   * --------------------------------------------------
-   */
 
   const handleBulkDelete = () => {
     if (selectedIds.length === 0) {
@@ -285,17 +217,8 @@ export default function ProductCatalog() {
       return;
     }
 
-    /*
-     * Take a snapshot of the IDs before starting the
-     * mutation so the mutation receives the correct
-     * selection even though the UI changes immediately.
-     */
     const productIds = [...selectedIds];
 
-    /*
-     * Close the confirmation modal immediately because
-     * the bulk delete is optimistic.
-     */
     setShowBulkDeleteModal(false);
 
     bulkDeleteProductsMutation.mutate(productIds, {
@@ -333,12 +256,6 @@ export default function ProductCatalog() {
     handleBulkStatusUpdate("inactive");
   };
 
-  /*
-   * --------------------------------------------------
-   * Toolbar
-   * --------------------------------------------------
-   */
-
   const toolbar = (
     <ProductToolbar
       title={title}
@@ -375,15 +292,6 @@ export default function ProductCatalog() {
     );
   }
 
-  /*
-   * keepPreviousData is enabled in useProducts.
-   *
-   * During a page/filter change we temporarily have
-   * the previous query's data while the new request runs.
-   *
-   * For this UI we intentionally show the loading state
-   * rather than displaying the old page.
-   */
   if (isFetching && isPlaceholderData) {
     return (
       <div className="products-page">

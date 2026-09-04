@@ -1,10 +1,7 @@
-import {
-  DollarSign,
-  Package,
-  Tag,
-  X,
-} from "lucide-react";
+import { DollarSign, Package, Tag, X } from "lucide-react";
 import { useState } from "react";
+
+import { validateProductForm } from "../../../utils/productValidation";
 
 const categories = [
   {
@@ -24,8 +21,8 @@ const categories = [
     label: "Clothing",
   },
   {
-    value: "home-kitchen",
-    label: "Home & Kitchen",
+    value: "home",
+    label: "Home",
   },
 ];
 
@@ -49,9 +46,7 @@ export default function ProductFormModal({
 }) {
   const isEditMode = mode === "edit";
 
-  const [formData, setFormData] = useState(() =>
-    getInitialFormData(product)
-  );
+  const [formData, setFormData] = useState(() => getInitialFormData(product));
 
   const [errors, setErrors] = useState({});
 
@@ -67,44 +62,10 @@ export default function ProductFormModal({
     }));
   };
 
-  const validate = () => {
-    const nextErrors = {};
-
-    if (!formData.title.trim()) {
-      nextErrors.title = "Product name is required.";
-    }
-
-    if (
-      formData.price === "" ||
-      Number(formData.price) < 0
-    ) {
-      nextErrors.price = "Enter a valid price.";
-    }
-
-    if (!formData.category) {
-      nextErrors.category = "Select a category.";
-    }
-
-    if (
-      formData.stock === "" ||
-      Number(formData.stock) < 0
-    ) {
-      nextErrors.stock = "Enter a valid stock quantity.";
-    }
-
-    if (!formData.status) {
-      nextErrors.status = "Select a status.";
-    }
-
-    setErrors(nextErrors);
-
-    return Object.keys(nextErrors).length === 0;
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!validate()) {
+    if (!validateProductForm()) {
       return;
     }
 
@@ -135,9 +96,7 @@ export default function ProductFormModal({
         <div className="modal-header">
           <div>
             <h2 id="product-form-title">
-              {isEditMode
-                ? "Edit product"
-                : "Add product"}
+              {isEditMode ? "Edit product" : "Add product"}
             </h2>
 
             <p>
@@ -158,14 +117,9 @@ export default function ProductFormModal({
           </button>
         </div>
 
-        <form
-          className="product-form"
-          onSubmit={handleSubmit}
-        >
+        <form className="product-form" onSubmit={handleSubmit}>
           <div className="form-field form-field-full">
-            <label htmlFor="product-title">
-              Product name
-            </label>
+            <label htmlFor="product-title">Product name</label>
 
             <div
               className={`form-input-wrapper ${
@@ -178,30 +132,19 @@ export default function ProductFormModal({
                 id="product-title"
                 type="text"
                 value={formData.title}
-                onChange={(event) =>
-                  updateField(
-                    "title",
-                    event.target.value
-                  )
-                }
+                onChange={(event) => updateField("title", event.target.value)}
                 placeholder="e.g. Wireless Headphones"
                 autoFocus
                 disabled={isSubmitting}
               />
             </div>
 
-            {errors.title && (
-              <span className="form-error">
-                {errors.title}
-              </span>
-            )}
+            {errors.title && <span className="form-error">{errors.title}</span>}
           </div>
 
           <div className="form-grid">
             <div className="form-field">
-              <label htmlFor="product-price">
-                Price
-              </label>
+              <label htmlFor="product-price">Price</label>
 
               <div
                 className={`form-input-wrapper ${
@@ -216,28 +159,19 @@ export default function ProductFormModal({
                   min="0"
                   step="0.01"
                   value={formData.price}
-                  onChange={(event) =>
-                    updateField(
-                      "price",
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => updateField("price", event.target.value)}
                   placeholder="0.00"
                   disabled={isSubmitting}
                 />
               </div>
 
               {errors.price && (
-                <span className="form-error">
-                  {errors.price}
-                </span>
+                <span className="form-error">{errors.price}</span>
               )}
             </div>
 
             <div className="form-field">
-              <label htmlFor="product-stock">
-                Stock
-              </label>
+              <label htmlFor="product-stock">Stock</label>
 
               <div
                 className={`form-input-wrapper ${
@@ -252,98 +186,62 @@ export default function ProductFormModal({
                   min="0"
                   step="1"
                   value={formData.stock}
-                  onChange={(event) =>
-                    updateField(
-                      "stock",
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => updateField("stock", event.target.value)}
                   placeholder="0"
                   disabled={isSubmitting}
                 />
               </div>
 
               {errors.stock && (
-                <span className="form-error">
-                  {errors.stock}
-                </span>
+                <span className="form-error">{errors.stock}</span>
               )}
             </div>
           </div>
 
           <div className="form-grid">
             <div className="form-field">
-              <label htmlFor="product-category">
-                Category
-              </label>
+              <label htmlFor="product-category">Category</label>
 
               <select
                 id="product-category"
-                className={
-                  errors.category ? "has-error" : ""
-                }
+                className={errors.category ? "has-error" : ""}
                 value={formData.category}
                 onChange={(event) =>
-                  updateField(
-                    "category",
-                    event.target.value
-                  )
+                  updateField("category", event.target.value)
                 }
                 disabled={isSubmitting}
               >
-                <option value="">
-                  Select category
-                </option>
+                <option value="">Select category</option>
 
                 {categories.map((category) => (
-                  <option
-                    key={category.value}
-                    value={category.value}
-                  >
+                  <option key={category.value} value={category.value}>
                     {category.label}
                   </option>
                 ))}
               </select>
 
               {errors.category && (
-                <span className="form-error">
-                  {errors.category}
-                </span>
+                <span className="form-error">{errors.category}</span>
               )}
             </div>
 
             <div className="form-field">
-              <label htmlFor="product-status">
-                Status
-              </label>
+              <label htmlFor="product-status">Status</label>
 
               <select
                 id="product-status"
-                className={
-                  errors.status ? "has-error" : ""
-                }
+                className={errors.status ? "has-error" : ""}
                 value={formData.status}
-                onChange={(event) =>
-                  updateField(
-                    "status",
-                    event.target.value
-                  )
-                }
+                onChange={(event) => updateField("status", event.target.value)}
                 disabled={isSubmitting}
               >
-                <option value="active">
-                  Active
-                </option>
+                <option value="active">Active</option>
 
-                <option value="inactive">
-                  Inactive
-                </option>
+                <option value="inactive">Inactive</option>
               </select>
 
               {errors.status && (
-                <span className="form-error">
-                  {errors.status}
-                </span>
+                <span className="form-error">{errors.status}</span>
               )}
             </div>
           </div>
