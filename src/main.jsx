@@ -6,7 +6,11 @@ import App from "./App.jsx";
 import { queryClient } from "./lib/query/queryClient.js";
 import { store } from "./lib/redux/store.js";
 import "./index.css";
-import "./App.css"
+import "./styles/animations-and-responsive.css"
+import "./styles/app-shell.css"
+import "./styles/modals.css"
+import "./styles/product-table.css"
+import "./styles/toolbar.css"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

@@ -21,8 +21,8 @@ const categories = [
     label: "Clothing",
   },
   {
-    value: "home",
-    label: "Home",
+    value: "video-games",
+    label: "Video Games",
   },
 ];
 
@@ -47,7 +47,6 @@ export default function ProductFormModal({
   const isEditMode = mode === "edit";
 
   const [formData, setFormData] = useState(() => getInitialFormData(product));
-
   const [errors, setErrors] = useState({});
 
   const updateField = (field, value) => {
@@ -65,9 +64,14 @@ export default function ProductFormModal({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!validateProductForm()) {
+    const validationErrors = validateProductForm(formData);
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
+
+    setErrors({});
 
     await onSubmit({
       ...formData,
@@ -139,7 +143,9 @@ export default function ProductFormModal({
               />
             </div>
 
-            {errors.title && <span className="form-error">{errors.title}</span>}
+            {errors.title && (
+              <span className="form-error">{errors.title}</span>
+            )}
           </div>
 
           <div className="form-grid">
@@ -159,7 +165,9 @@ export default function ProductFormModal({
                   min="0"
                   step="0.01"
                   value={formData.price}
-                  onChange={(event) => updateField("price", event.target.value)}
+                  onChange={(event) =>
+                    updateField("price", event.target.value)
+                  }
                   placeholder="0.00"
                   disabled={isSubmitting}
                 />
@@ -186,7 +194,9 @@ export default function ProductFormModal({
                   min="0"
                   step="1"
                   value={formData.stock}
-                  onChange={(event) => updateField("stock", event.target.value)}
+                  onChange={(event) =>
+                    updateField("stock", event.target.value)
+                  }
                   placeholder="0"
                   disabled={isSubmitting}
                 />
@@ -232,11 +242,12 @@ export default function ProductFormModal({
                 id="product-status"
                 className={errors.status ? "has-error" : ""}
                 value={formData.status}
-                onChange={(event) => updateField("status", event.target.value)}
+                onChange={(event) =>
+                  updateField("status", event.target.value)
+                }
                 disabled={isSubmitting}
               >
                 <option value="active">Active</option>
-
                 <option value="inactive">Inactive</option>
               </select>
 

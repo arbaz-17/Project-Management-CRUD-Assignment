@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Filter, Moon, Plus, RefreshCw, Search, Sun, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { toggleTheme } from "../../../lib/redux/appSlice.js";
 import { selectTheme } from "../../../lib/redux/selectors.js";
+import { debounce } from "../../../utils/debounce.js";
 
 export default function ProductToolbar({
   title,
@@ -21,6 +23,7 @@ export default function ProductToolbar({
 
   const dispatch = useDispatch();
   const theme = useSelector(selectTheme);
+
   const [searchInput, setSearchInput] = useState(title);
 
   const activeFilterCount = [category, status].filter(Boolean).length;
@@ -30,12 +33,12 @@ export default function ProductToolbar({
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      onSearch(searchInput);
-    }, 500);
+    const debouncedSearch = debounce(onSearch, 500);
+
+    debouncedSearch(searchInput);
 
     return () => {
-      clearTimeout(timeoutId);
+      debouncedSearch.cancel();
     };
   }, [searchInput, title, onSearch]);
 
@@ -135,14 +138,18 @@ export default function ProductToolbar({
               <option value="electronics">Electronics</option>
               <option value="books">Books</option>
               <option value="clothing">Clothing</option>
-              <option value="home-kitchen">Home & Kitchen</option>
+              <option value="video-games">Video Games</option>
             </select>
           </div>
 
           <div className="filter-group">
             <label htmlFor="status-filter">Status</label>
 
-            <select id="status-filter" value={status} onChange={onStatusChange}>
+            <select
+              id="status-filter"
+              value={status}
+              onChange={onStatusChange}
+            >
               <option value="">All statuses</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>

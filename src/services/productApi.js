@@ -1,6 +1,7 @@
 const API_URL = "https://6a97c4900e3240db90620c53.mockapi.io/api/products";
 
-export async function getProducts(params = {}) {
+
+export async function getProducts(params = {}, signal) {
   const searchParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -13,7 +14,13 @@ export async function getProducts(params = {}) {
 
   const url = queryString ? `${API_URL}?${queryString}` : API_URL;
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    signal,
+  });
+  
+  if (response.status === 404) {
+    return [];
+  }
 
   if (!response.ok) {
     throw new Error(
@@ -25,6 +32,7 @@ export async function getProducts(params = {}) {
 
   return data;
 }
+
 
 export async function createProduct(productData) {
   const now = new Date().toISOString();

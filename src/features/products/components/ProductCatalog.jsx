@@ -179,7 +179,6 @@ export default function ProductCatalog() {
     setProductModal(null);
   };
 
-
   const handleDelete = (product) => {
     setProductToDelete(product);
   };
@@ -190,11 +189,11 @@ export default function ProductCatalog() {
 
   const handleDeleteConfirm = (product) => {
     const productId = product.id;
+
     setProductToDelete(null);
 
     deleteProductMutation.mutate(productId);
   };
-
 
   const handleBulkDelete = () => {
     if (selectedIds.length === 0) {
@@ -272,12 +271,42 @@ export default function ProductCatalog() {
     />
   );
 
+  /*
+   * Keep the product form modal independent from the catalog's
+   * loading/error/empty states.
+   *
+   * Without this, clicking "Create Product" could update
+   * productModal state while the component returned early from
+   * one of those states, meaning the modal was never rendered.
+   */
+  const productFormModal = productModal && (
+    <ProductFormModal
+      key={`${productModal.mode}-${productModal.product?.id ?? "new"}`}
+      mode={productModal.mode}
+      product={productModal.product}
+      onClose={handleCloseProductModal}
+      onSubmit={handleProductSubmit}
+      isSubmitting={
+        productModal.mode === "edit"
+          ? updateProductMutation.isPending
+          : createProductMutation.isPending
+      }
+      submissionError={
+        productModal.mode === "edit"
+          ? updateProductMutation.error
+          : createProductMutation.error
+      }
+    />
+  );
+
   if (isPending) {
     return (
       <div className="products-page">
         {toolbar}
 
         <ProductLoadingState />
+
+        {productFormModal}
       </div>
     );
   }
@@ -287,7 +316,12 @@ export default function ProductCatalog() {
       <div className="products-page">
         {toolbar}
 
-        <ProductErrorState message={error?.message} onRetry={refetch} />
+        <ProductErrorState
+          message={error?.message}
+          onRetry={refetch}
+        />
+
+        {productFormModal}
       </div>
     );
   }
@@ -298,6 +332,8 @@ export default function ProductCatalog() {
         {toolbar}
 
         <ProductLoadingState message="Loading products..." />
+
+        {productFormModal}
       </div>
     );
   }
@@ -328,6 +364,8 @@ export default function ProductCatalog() {
           isDisabled={true}
           isFetching={false}
         />
+
+        {productFormModal}
       </div>
     );
   }
@@ -342,7 +380,8 @@ export default function ProductCatalog() {
         </div>
 
         <div className="table-meta">
-          {products.length} {products.length === 1 ? "item" : "items"}
+          {products.length}{" "}
+          {products.length === 1 ? "item" : "items"}
         </div>
       </div>
 
@@ -381,25 +420,7 @@ export default function ProductCatalog() {
         isFetching={isFetching}
       />
 
-      {productModal && (
-        <ProductFormModal
-          key={`${productModal.mode}-${productModal.product?.id ?? "new"}`}
-          mode={productModal.mode}
-          product={productModal.product}
-          onClose={handleCloseProductModal}
-          onSubmit={handleProductSubmit}
-          isSubmitting={
-            productModal.mode === "edit"
-              ? updateProductMutation.isPending
-              : createProductMutation.isPending
-          }
-          submissionError={
-            productModal.mode === "edit"
-              ? updateProductMutation.error
-              : createProductMutation.error
-          }
-        />
-      )}
+      {productFormModal}
 
       {productToDelete && (
         <DeleteProductModal
